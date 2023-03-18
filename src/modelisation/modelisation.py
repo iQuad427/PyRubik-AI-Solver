@@ -5,7 +5,7 @@ import numpy as np
 FACETS = 9
 COLORS = "RBWVOJ"
 n = 3
-moves = ["U", "R", "F", "L", "B", "D"]  # up, right, front, left, back, down (order defined by the model)
+moves = ["U", "L", "F", "R", "B", "D"]  # up, right, front, left, back, down (order defined by the model)
 colors = ["Y", "B", "R", "G", "O", "W"]  # yellow, blue, red, green, orange, white
 
 
@@ -73,8 +73,9 @@ class Cube:
                 u = (t[-1],) + t
                 for i, v in enumerate(t):
                     self.cube[v] = save[u[i]]
+            print(self)
 
-        return self
+        return perms
 
 
 def get_position_index(face: int, row: int, col: int):
@@ -93,26 +94,27 @@ def generate_crown_moves():
         for j in range(n):
             # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
             permutation_m.append((
-                get_position_index(1, i, j),
-                get_position_index(2, i, j),
-                get_position_index(3, i, j),
-                get_position_index(4, i, j)
+                get_position_index(0, j, i),
+                get_position_index(2, j, i),
+                get_position_index(5, j, i),
+                get_position_index(4, n - j - 1, n - i - 1)
             ))
 
             # E - Sagittal crown permutations - starts from face 0 (then 2, 5, 4)
             permutation_e.append((
-                get_position_index(0, j, i),
-                get_position_index(2, j, i),
-                get_position_index(5, j, i),
-                get_position_index(4, j, i)
+                get_position_index(1, i, j),
+                get_position_index(2, i, j),
+                get_position_index(3, i, j),
+                get_position_index(4, i, j)
+
             ))
 
             # S - Frontal crown permutation - starts from face 0 (then 3', 5, 1')
             permutation_s.append((
                 get_position_index(0, i, j),
                 get_position_index(3, j, i),
-                get_position_index(5, i, j),
-                get_position_index(1, j, i)
+                get_position_index(5, n - i - 1, n - j - 1),
+                get_position_index(1, n - j - 1, i)
             ))
 
         permutations[f"{i}M"] = permutation_m
@@ -153,9 +155,9 @@ def generate_lateral_moves():
                     get_position_index(1, 0, j)
                 ))
 
-        if move == "R":
+        if move == "L":
             for j in range(n):
-                permutation.append((  # 1 : Right face - 0, 2, 5, 4
+                permutation.append((  # 1 : Left face - 0, 2, 5, 4
                     get_position_index(0, j, 0),
                     get_position_index(2, j, 0),
                     get_position_index(5, j, 0),
@@ -170,9 +172,9 @@ def generate_lateral_moves():
                     get_position_index(1, n - j - 1, n - 1)
                 ))
 
-        if move == "L":
+        if move == "R":
             for j in range(n):
-                permutation.append((  # 3 : Left face - 5, 2, 0, 4
+                permutation.append((  # 3 : Right face - 5, 2, 0, 4
                     get_position_index(5, j, n - 1),
                     get_position_index(2, j, n - 1),
                     get_position_index(0, j, n - 1),
@@ -236,9 +238,13 @@ if __name__ == '__main__':
     print(generate_crown_moves())
 
     cube = Cube(3)
-    scramble = cube.scramble(5)
+    # scramble = cube.scramble(5)
+    #
+    # print(scramble)
+    cube.permute(["U'", 'L', "1M'", 'L', 'B'])
 
-    print(scramble)
+    # cube.permute(["1S"])
+    # cube.permute(["1E'"])
 
     # print(cube.permute("1M"))
     # print(cube.permute("1M"))
