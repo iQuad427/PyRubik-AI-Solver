@@ -23,3 +23,6 @@ class GenericGameEngine:
 
     def run(self):
         raise NotImplementedError()
+
+    def __str__(self):
+        return self.__class__.__name__

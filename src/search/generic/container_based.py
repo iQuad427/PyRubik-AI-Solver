@@ -34,7 +34,6 @@ class ContainerBasedGameEngine(GenericGameEngine):
         while container:
             # Remove previous print
             state = self.get_next_state(container)
-            print(state.depth)
             score = self.evaluation_function(state)
 
             if score == 0:
