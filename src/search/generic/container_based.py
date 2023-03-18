@@ -26,6 +26,8 @@ class ContainerBasedGameEngine(GenericGameEngine):
         self.insert_to_container = insert_to_container
         self.container_generator = container_generator
         self.get_next_state = get_next_state
+        self.best_found = None
+        self.best_score = math.inf
 
     def run(self):
         container = self.container_generator()
@@ -38,6 +40,11 @@ class ContainerBasedGameEngine(GenericGameEngine):
 
             if score == 0:
                 return state
+
+            if score < self.best_score:
+                print(f"New best score: {score}")
+                self.best_found = state
+                self.best_score = score
 
             if state.depth < self.max_depth:
                 for action in state.get_legal_actions():
