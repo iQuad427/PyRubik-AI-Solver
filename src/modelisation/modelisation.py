@@ -91,10 +91,10 @@ def generate_crown_moves():
 
             # E - Sagittal crown permutations - starts from face 0 (then 2, 5, 4)
             permutation_e.append((
-                get_position_index(0, i, j),
-                get_position_index(2, i, j),
-                get_position_index(5, i, j),
-                get_position_index(4, i, j)
+                get_position_index(0, j, i),
+                get_position_index(2, j, i),
+                get_position_index(5, j, i),
+                get_position_index(4, j, i)
             ))
 
             # S - Frontal crown permutation - starts from face 0 (then 3', 5, 1')
@@ -227,7 +227,12 @@ if __name__ == '__main__':
 
     cube = Cube(3)
 
-    print(cube.permute("U"))
-    print(cube.permute("U'"))
+    print(cube.permute("1M"))
+    print(cube.permute("1M"))
+    print(cube.permute("1E"))
+    print(cube.permute("1E"))
+    print(cube.permute("1S"))
+    print(cube.permute("1S"))
 
+    print(cube)
     print(final_position(cube.cube))
