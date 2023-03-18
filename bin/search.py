@@ -9,6 +9,9 @@ from src.search.informed.a_star import AStarSearchEngine
 from src.search.informed.iterative_a_star import IterativeDeepeningAStarSearchEngine
 from src.search.informed.step_by_step_a_star import AStarStepByStep
 from src.search.models.game_state import GameState
+from src.search.stochastic.best_improvement import BestImprovement
+from src.search.stochastic.first_improvement import FirstImprovement
+from src.search.stochastic.iterative import IteratedLocalSearch
 from src.search.uninformed.breadth import BreadthFirstSearchEngine
 from src.search.uninformed.depth import DepthFirstSearchEngine
 from src.search.uninformed.iterative_depth import IterativeDeepeningSearchEngine
@@ -52,6 +55,9 @@ if __name__ == "__main__":
 if __name__ == "2__main__":
 
     engines = [
+        # IteratedLocalSearch,
+        # FirstImprovement,
+        # BestImprovement,
         # AStarSearchEngine,
         # IterativeDeepeningSearchEngine,
         # DepthFirstSearchEngine,
