@@ -74,7 +74,6 @@ class Cube:
                 u = (t[-1],) + t
                 for i, v in enumerate(t):
                     self.cube[v] = save[u[i]]
-            print(self)
 
         return perms
 
@@ -92,38 +91,39 @@ def generate_crown_moves():
 
     # Transversal crown permutations
     for i in range(1, n - 1):
-        permutation_m = []
-        permutation_e = []
-        permutation_s = []
-        for j in range(n):
-            # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
-            permutation_m.append((
-                get_position_index(0, j, i),
-                get_position_index(2, j, i),
-                get_position_index(5, j, i),
-                get_position_index(4, n - j - 1, n - i - 1)
-            ))
+        if n % 2 == 0 or i != n//2:
+            permutation_m = []
+            permutation_e = []
+            permutation_s = []
+            for j in range(n):
+                # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
+                permutation_m.append((
+                    get_position_index(0, j, i),
+                    get_position_index(2, j, i),
+                    get_position_index(5, j, i),
+                    get_position_index(4, n - j - 1, n - i - 1)
+                ))
 
-            # E - Sagittal crown permutations - starts from face 0 (then 2, 5, 4)
-            permutation_e.append((
-                get_position_index(1, i, j),
-                get_position_index(2, i, j),
-                get_position_index(3, i, j),
-                get_position_index(4, i, j)
+                # E - Sagittal crown permutations - starts from face 0 (then 2, 5, 4)
+                permutation_e.append((
+                    get_position_index(1, i, j),
+                    get_position_index(2, i, j),
+                    get_position_index(3, i, j),
+                    get_position_index(4, i, j)
 
-            ))
+                ))
 
-            # S - Frontal crown permutation - starts from face 0 (then 3', 5, 1')
-            permutation_s.append((
-                get_position_index(0, i, j),
-                get_position_index(3, j, i),
-                get_position_index(5, n - i - 1, n - j - 1),
-                get_position_index(1, n - j - 1, i)
-            ))
+                # S - Frontal crown permutation - starts from face 0 (then 3', 5, 1')
+                permutation_s.append((
+                    get_position_index(0, i, j),
+                    get_position_index(3, j, i),
+                    get_position_index(5, n - i - 1, n - j - 1),
+                    get_position_index(1, n - j - 1, i)
+                ))
 
-        permutations[f"{i}M"] = permutation_m
-        permutations[f"{i}E"] = permutation_e
-        permutations[f"{i}S"] = permutation_s
+            permutations[f"{i}M"] = permutation_m
+            permutations[f"{i}E"] = permutation_e
+            permutations[f"{i}S"] = permutation_s
 
     return permutations
 
@@ -241,11 +241,12 @@ if __name__ == '__main__':
     print(generate_lateral_moves())
     print(generate_crown_moves())
 
-    cube = Cube(3)
-    # scramble = cube.scramble(5)
-    #
-    # print(scramble)
-    cube.permute(["U'", 'L', "1M'", 'L', 'B'])
+    n = 3
+
+    cube = Cube(n)
+    scramble = cube.scramble(5)
+
+    print(scramble)
 
     # cube.permute(["1S"])
     # cube.permute(["1E'"])
