@@ -2,6 +2,7 @@ import random
 
 from src.modelisation.modelisation import Cube, invert_moves
 from src.search.evaluation.distance import distance_to_good_face_evaluation_function
+from src.search.evaluation.membership import face_color_membership_evaluation_function
 
 
 class GeneticAlgorithm:
@@ -61,7 +62,12 @@ class GeneticAlgorithm:
                 except ValueError:
                     pass
 
+            before_mutation = individual.copy()
+
             individual[index] = random.choice(possibilities)
+
+            if self.evaluate(individual) > self.evaluate(before_mutation):
+                individual = before_mutation
 
         return individual
 
@@ -92,15 +98,11 @@ class GeneticAlgorithm:
         new_generation = []
 
         for i in range(0, len(selected_individuals), 2):
-            new_generation += self.crossover_individuals(
-                selected_individuals[i], selected_individuals[i + 1]
+            new_generation.extend(
+                self.crossover_individuals(
+                    selected_individuals[i], selected_individuals[i + 1]
+                )
             )
-
-        # replace the 10% of the new generation with the 5% best of the old generation
-        evaluated = [self.evaluate(individual) for individual in selected_individuals]
-        best_individuals = sorted(
-            zip(selected_individuals, evaluated), key=lambda x: x[1]
-        )[: int(self.nb_individuals * 0.05)]
 
         return new_generation
 
@@ -123,7 +125,7 @@ class GeneticAlgorithm:
         return [individual1, individual2]
 
     def evaluate(self, individual):
-        cube = self.cube.permute([x for x in individual if x != "EMPTY"])
+        cube = self.cube.permute(individual)
 
         return self.evaluation_function(Cube(3, cube))
 
@@ -132,5 +134,5 @@ if __name__ == "__main__":
     cube = Cube(3)
     cube.scramble(100)
     GeneticAlgorithm(
-        200, 1000, 30, 0.1, cube, distance_to_good_face_evaluation_function
+        100, 1000, 100, 0.2, cube, face_color_membership_evaluation_function
     ).run()
