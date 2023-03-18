@@ -6,6 +6,7 @@ import numpy as np
 NB_FACES_CUBE = 6
 FACETS = 9
 COLORS = "RBWVOJ"
+COLORS_INT = [0, 1, 2, 3, 4, 5]
 n = 3
 moves = [
     "U",
@@ -121,6 +122,14 @@ class Cube:
     def get_color(self, face: int, row: int, col: int) -> List[str]:
         return self.cube[face * self.n * self.n + row * self.n + col]
 
+    def int_list(self):
+        int_data = []
+
+        for color in self.cube:
+            int_data.append(colors.index(color))
+
+        return int_data
+
 
 def get_position_index(face: int, row: int, col: int):
     return n * n * face + n * row + col
@@ -151,12 +160,14 @@ def generate_crown_moves():
             permutation_s = []
             for j in range(n):
                 # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
-                permutation_m.append((
-                    get_position_index(0, j, i),
-                    get_position_index(2, j, i),
-                    get_position_index(5, j, i),
-                    get_position_index(4, n - j - 1, n - i - 1)
-                ))
+                permutation_m.append(
+                    (
+                        get_position_index(0, j, i),
+                        get_position_index(2, j, i),
+                        get_position_index(5, j, i),
+                        get_position_index(4, n - j - 1, n - i - 1),
+                    )
+                )
 
                 # E - Sagittal crown permutations - starts from face 0 (then 2, 5, 4)
                 permutation_e.append(

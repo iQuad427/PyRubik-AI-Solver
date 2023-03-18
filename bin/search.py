@@ -7,6 +7,7 @@ from src.search.evaluation.entropy import entropy_based_score_evaluation_functio
 from src.search.evaluation.membership import face_color_membership_evaluation_function
 from src.search.informed.a_star import AStarSearchEngine
 from src.search.informed.iterative_a_star import IterativeDeepeningAStarSearchEngine
+from src.search.informed.step_by_step_a_star import AStarStepByStep
 from src.search.models.game_state import GameState
 from src.search.stochastic.best_improvement import BestImprovement
 from src.search.stochastic.first_improvement import FirstImprovement
@@ -30,15 +31,38 @@ def time_function(function, *args, **kwargs):
 
 
 if __name__ == "__main__":
+    cube = Cube(3)
+    cube.scramble(20)
+
+    print(cube)
+
+    def combined_evaluation_function(state: GameState):
+        return (
+            distance_to_good_face_evaluation_function(state)
+            + 0.3 * entropy_based_score_evaluation_function(state)
+            + 0.3 * face_color_membership_evaluation_function(state)
+        )
+
+    print(combined_evaluation_function(GameState(cube)))
+
+    result = AStarStepByStep(GameState(cube), combined_evaluation_function, 100)
+
+    result.run()
+    print(combined_evaluation_function(result.state))
+    print(result.state.cube)
+
+
+if __name__ == "2__main__":
 
     engines = [
-        IteratedLocalSearch,
+        # IteratedLocalSearch,
         # FirstImprovement,
         # BestImprovement,
         # AStarSearchEngine,
         # IterativeDeepeningSearchEngine,
         # DepthFirstSearchEngine,
         # IterativeDeepeningAStarSearchEngine,
+        AStarStepByStep,
         # BreadthFirstSearchEngine,
     ]
 
@@ -53,8 +77,8 @@ if __name__ == "__main__":
                 time = time_function(
                     engine,
                     GameState(cube),
-                    distance_to_good_face_evaluation_function,
-                    # max_depth=i + 1,
+                    entropy_based_score_evaluation_function,
+                    max_depth=i + 1,
                 )
                 total_for_this_config += time
 
