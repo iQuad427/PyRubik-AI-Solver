@@ -1,3 +1,4 @@
+import copy
 import random
 
 from src.modelisation.modelisation import Cube, invert_moves
@@ -30,13 +31,13 @@ class GeneticAlgorithm:
 
         for generation_count in range(self.nb_generations):
             print(f"Generation {generation_count}")
-
+            gen = copy.deepcopy(generation)
             generation = self.next_generation(generation)
 
             for individual in generation:
                 self.mutate(individual)
 
-            print(len(generation[0]))
+            print(len(generation))
 
             print(min([self.evaluate(individual) for individual in generation]))
 
@@ -63,14 +64,14 @@ class GeneticAlgorithm:
                     pass
 
             before_mutation = individual.copy()
+            random_choice = random.choice(possibilities)
+            before_mutation[index] = random_choice
 
-            individual[index] = random.choice(possibilities)
-
+            # TODO: Maybe it's better to do mutation anyway cuz we often get stuck with good but not good enough solutions
             if self.evaluate(individual) > self.evaluate(before_mutation):
-                individual = before_mutation
+                individual[index] = random_choice
 
         return individual
-
     def next_generation(self, generation):
         """
         The chromosomes of the current population are selected using roulette wheel method with probability =80%
@@ -78,7 +79,7 @@ class GeneticAlgorithm:
         """
 
         # Selection
-        selected_individuals = self.selection(generation)
+        selected_individuals = self.selection_elitist(generation)
 
         # Crossover
         new_generation = self.crossover(selected_individuals)
@@ -88,9 +89,35 @@ class GeneticAlgorithm:
     def selection(self, generation):
 
         # Evaluate each individual
-        evaluated = [self.evaluate(individual) for individual in generation]
+        evaluated = [1/self.evaluate(individual) if self.evaluate(individual) !=0 else 100 for individual in generation]
 
         return random.choices(generation, weights=evaluated, k=self.nb_individuals)
+
+    def selection_elitist(self, generation):
+        """
+        Multiply by 10 the number of the 5% best solutions in the generation
+        :param generation:
+        :return:
+        """
+        new_generation = []
+        # Evaluate each individual
+        evaluated = [self.evaluate(individual) for individual in generation]
+        list_evaluated_generation = []
+        # Sorting based on evaluation
+        for i in range(len(generation)):
+            list_evaluated_generation.append((evaluated[i], generation[i]))
+        list_evaluated_generation.sort()
+
+        # Make the 5% best take over 45% of the population
+        for i in range(int(len(generation)*0.05)):
+            for j in range(9):
+                new_generation.append(list_evaluated_generation[i][1])
+
+        # Make the 55% best take over the rest of the population
+        while len(new_generation) < len(generation):
+            new_generation.append(list_evaluated_generation[len(new_generation)][1])
+
+        return new_generation
 
     def crossover(self, selected_individuals):
 
@@ -132,7 +159,7 @@ class GeneticAlgorithm:
 
 if __name__ == "__main__":
     cube = Cube(3)
-    cube.scramble(100)
+    cube.scramble(4)
     GeneticAlgorithm(
-        100, 1000, 100, 0.2, cube, face_color_membership_evaluation_function
+        100, 1000, 4, 0.2, cube, face_color_membership_evaluation_function
     ).run()
