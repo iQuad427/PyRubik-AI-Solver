@@ -1,7 +1,9 @@
 import math
+import random
 
 from src.search.generic.generic import GenericGameEngine
 from src.search.informed.a_star import AStarSearchEngine
+from src.search.models.game_state import GameState
 from src.search.uninformed.breadth import BreadthFirstSearchEngine
 from src.search.uninformed.depth import DepthFirstSearchEngine
 from src.search.uninformed.iterative_depth import IterativeDeepeningSearchEngine
@@ -15,18 +17,40 @@ class AStarStepByStep(GenericGameEngine):
         i = 1
 
         while i < self.max_depth:
-            engine = IterativeDeepeningSearchEngine(
-                self.state, self.evaluation_function, 5
-            )
+            engine = BreadthFirstSearchEngine(self.state, self.evaluation_function, 4)
             engine.run()
 
-            if engine.best_found is not None:
-                if engine.best_found == self.state:
-                    return self.state
-                print("New start state", engine.best_found)
-                self.state = engine.best_found
+            solutions = []
+            solutions_score = []
+            print(i)
+
+            for best_found in engine.best_founds:
+                new_engine = DepthFirstSearchEngine(
+                    GameState(best_found.cube),
+                    self.evaluation_function,
+                    4,
+                )
+
+                new_engine.run()
+
+                for best_found in new_engine.best_founds:
+                    new_engine = DepthFirstSearchEngine(
+                        GameState(best_found.cube),
+                        self.evaluation_function,
+                        3,
+                    )
+                    new_engine.run()
+
+                    solutions.extend(new_engine.best_founds)
+                    solutions_score.extend(new_engine.best_scores)
+
+            best_score = min(solutions_score)
+            print(best_score)
+
+            self.state = solutions[solutions_score.index(best_score)]
+
+            # 50% chance of random move
+            if random.random() < 0.5:
+                self.state.cube.scramble(random.randint(1, 10))
 
             i += 1
-
-            if engine.best_score == 0:
-                return engine.best_found
