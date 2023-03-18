@@ -3,10 +3,19 @@ from typing import List
 
 import numpy as np
 
+NB_FACES_CUBE = 6
+
 FACETS = 9
 COLORS = "RBWVOJ"
 n = 3
-moves = ["U", "R", "F", "L", "B", "D"]  # up, right, front, left, back, down (order defined by the model)
+moves = [
+    "U",
+    "R",
+    "F",
+    "L",
+    "B",
+    "D",
+]  # up, right, front, left, back, down (order defined by the model)
 colors = ["Y", "B", "R", "G", "O", "W"]  # yellow, blue, red, green, orange, white
 
 
@@ -41,7 +50,9 @@ class Cube:
                         |----|----|----|
                         |  {51} |  {52} |  {53} |
                         |----|----|----|
-        """.format(*[self.cube[i] for i in range(self.n * self.n * 6)])
+        """.format(
+            *[self.cube[i] for i in range(self.n * self.n * 6)]
+        )
 
     def _generate_cube(self):
         model = []
@@ -78,11 +89,11 @@ class Cube:
         return self
 
     def get_face_colors(self, face: int) -> List[str]:
-        return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n]
+        return self.cube[face * self.n * self.n : (face + 1) * self.n * self.n]
 
 
 def get_position_index(face: int, row: int, col: int):
-    return n*n*face + n*row + col
+    return n * n * face + n * row + col
 
 
 def generate_crown_moves():
@@ -96,28 +107,34 @@ def generate_crown_moves():
         permutation_s = []
         for j in range(n):
             # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
-            permutation_m.append((
-                get_position_index(1, i, j),
-                get_position_index(2, i, j),
-                get_position_index(3, i, j),
-                get_position_index(4, i, j)
-            ))
+            permutation_m.append(
+                (
+                    get_position_index(1, i, j),
+                    get_position_index(2, i, j),
+                    get_position_index(3, i, j),
+                    get_position_index(4, i, j),
+                )
+            )
 
             # E - Sagittal crown permutations - starts from face 0 (then 2, 5, 4)
-            permutation_e.append((
-                get_position_index(0, j, i),
-                get_position_index(2, j, i),
-                get_position_index(5, j, i),
-                get_position_index(4, j, i)
-            ))
+            permutation_e.append(
+                (
+                    get_position_index(0, j, i),
+                    get_position_index(2, j, i),
+                    get_position_index(5, j, i),
+                    get_position_index(4, j, i),
+                )
+            )
 
             # S - Frontal crown permutation - starts from face 0 (then 3', 5, 1')
-            permutation_s.append((
-                get_position_index(0, i, j),
-                get_position_index(3, j, i),
-                get_position_index(5, i, j),
-                get_position_index(1, j, i)
-            ))
+            permutation_s.append(
+                (
+                    get_position_index(0, i, j),
+                    get_position_index(3, j, i),
+                    get_position_index(5, i, j),
+                    get_position_index(1, j, i),
+                )
+            )
 
         permutations[f"{i}M"] = permutation_m
         permutations[f"{i}E"] = permutation_e
@@ -131,75 +148,91 @@ def generate_lateral_moves():
 
     for face, move in enumerate(moves):
         # corners permutation : 1
-        permutation = [(
-            get_position_index(face, 0, 0),
-            get_position_index(face, 0, 2),
-            get_position_index(face, 2, 2),
-            get_position_index(face, 2, 0),
-        )]
+        permutation = [
+            (
+                get_position_index(face, 0, 0),
+                get_position_index(face, 0, 2),
+                get_position_index(face, 2, 2),
+                get_position_index(face, 2, 0),
+            )
+        ]
 
         # edges permutations : n - 2 (from 1 to n - 1)
         for i in range(1, n):
-            permutation.append((
-                get_position_index(face, 0, i),
-                get_position_index(face, i, n - 1),
-                get_position_index(face, n - 1, n - i - 1),
-                get_position_index(face, n - i - 1, 0),
-            ))
+            permutation.append(
+                (
+                    get_position_index(face, 0, i),
+                    get_position_index(face, i, n - 1),
+                    get_position_index(face, n - 1, n - i - 1),
+                    get_position_index(face, n - i - 1, 0),
+                )
+            )
 
         # edges permutation : n
         if move == "U":
             for j in range(n):
-                permutation.append((  # 0 : Up face - 4, 3, 2, 1
-                    get_position_index(4, 0, j),
-                    get_position_index(3, 0, j),
-                    get_position_index(2, 0, j),
-                    get_position_index(1, 0, j)
-                ))
+                permutation.append(
+                    (  # 0 : Up face - 4, 3, 2, 1
+                        get_position_index(4, 0, j),
+                        get_position_index(3, 0, j),
+                        get_position_index(2, 0, j),
+                        get_position_index(1, 0, j),
+                    )
+                )
 
         if move == "R":
             for j in range(n):
-                permutation.append((  # 1 : Right face - 0, 2, 5, 4
-                    get_position_index(0, j, 0),
-                    get_position_index(2, j, 0),
-                    get_position_index(5, j, 0),
-                    get_position_index(4, n - j - 1, n - 1)
-                ))
+                permutation.append(
+                    (  # 1 : Right face - 0, 2, 5, 4
+                        get_position_index(0, j, 0),
+                        get_position_index(2, j, 0),
+                        get_position_index(5, j, 0),
+                        get_position_index(4, n - j - 1, n - 1),
+                    )
+                )
         if move == "F":
             for j in range(n):
-                permutation.append((  # 2 : Front face - 0, 3, 5, 1
-                    get_position_index(0, n - 1, j),
-                    get_position_index(3, j, 0),
-                    get_position_index(5, 0, n - j - 1),
-                    get_position_index(1, n - j - 1, n - 1)
-                ))
+                permutation.append(
+                    (  # 2 : Front face - 0, 3, 5, 1
+                        get_position_index(0, n - 1, j),
+                        get_position_index(3, j, 0),
+                        get_position_index(5, 0, n - j - 1),
+                        get_position_index(1, n - j - 1, n - 1),
+                    )
+                )
 
         if move == "L":
             for j in range(n):
-                permutation.append((  # 3 : Left face - 5, 2, 0, 4
-                    get_position_index(5, j, n - 1),
-                    get_position_index(2, j, n - 1),
-                    get_position_index(0, j, n - 1),
-                    get_position_index(4, n - j - 1, 0)
-                ))
+                permutation.append(
+                    (  # 3 : Left face - 5, 2, 0, 4
+                        get_position_index(5, j, n - 1),
+                        get_position_index(2, j, n - 1),
+                        get_position_index(0, j, n - 1),
+                        get_position_index(4, n - j - 1, 0),
+                    )
+                )
 
         if move == "B":
             for j in range(n):
-                permutation.append((  # 4 : Back face - 0, 1, 5, 3
-                    get_position_index(0, 0, n - j - 1),
-                    get_position_index(1, j, 0),
-                    get_position_index(5, n - 1, j),
-                    get_position_index(3, n - j - 1, n - 1)
-                ))
+                permutation.append(
+                    (  # 4 : Back face - 0, 1, 5, 3
+                        get_position_index(0, 0, n - j - 1),
+                        get_position_index(1, j, 0),
+                        get_position_index(5, n - 1, j),
+                        get_position_index(3, n - j - 1, n - 1),
+                    )
+                )
 
         if move == "D":
             for j in range(n):
-                permutation.append((  # 5 : Down face - 1, 2, 3, 4
-                    get_position_index(1, n - 1, j),
-                    get_position_index(2, n - 1, j),
-                    get_position_index(3, n - 1, j),
-                    get_position_index(4, n - 1, j)
-                ))
+                permutation.append(
+                    (  # 5 : Down face - 1, 2, 3, 4
+                        get_position_index(1, n - 1, j),
+                        get_position_index(2, n - 1, j),
+                        get_position_index(3, n - 1, j),
+                        get_position_index(4, n - 1, j),
+                    )
+                )
 
         permutations[move] = permutation
 
@@ -232,10 +265,12 @@ def final_position(pos):
         if facet != color:
             color = facet
             nb += 1
-    return nb == len(COLORS)  # we check if the number of color changes corresponds to the number of colors
+    return nb == len(
+        COLORS
+    )  # we check if the number of color changes corresponds to the number of colors
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(generate_lateral_moves())
     print(generate_crown_moves())
 
