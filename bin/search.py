@@ -2,10 +2,15 @@ import json
 from collections import defaultdict
 
 from src.modelisation.modelisation import Cube
+from src.search.evaluation.distance import distance_to_good_face_evaluation_function
 from src.search.evaluation.entropy import entropy_based_score_evaluation_function
+from src.search.evaluation.membership import face_color_membership_evaluation_function
 from src.search.informed.a_star import AStarSearchEngine
 from src.search.informed.iterative_a_star import IterativeDeepeningAStarSearchEngine
 from src.search.models.game_state import GameState
+from src.search.stochastic.best_improvement import BestImprovement
+from src.search.stochastic.first_improvement import FirstImprovement
+from src.search.stochastic.iterative import IteratedLocalSearch
 from src.search.uninformed.breadth import BreadthFirstSearchEngine
 from src.search.uninformed.depth import DepthFirstSearchEngine
 from src.search.uninformed.iterative_depth import IterativeDeepeningSearchEngine
@@ -27,10 +32,13 @@ def time_function(function, *args, **kwargs):
 if __name__ == "__main__":
 
     engines = [
+        IteratedLocalSearch,
+        # FirstImprovement,
+        # BestImprovement,
         # AStarSearchEngine,
         # IterativeDeepeningSearchEngine,
         # DepthFirstSearchEngine,
-        IterativeDeepeningAStarSearchEngine,
+        # IterativeDeepeningAStarSearchEngine,
         # BreadthFirstSearchEngine,
     ]
 
@@ -45,8 +53,8 @@ if __name__ == "__main__":
                 time = time_function(
                     engine,
                     GameState(cube),
-                    entropy_based_score_evaluation_function,
-                    max_depth=i + 1,
+                    distance_to_good_face_evaluation_function,
+                    # max_depth=i + 1,
                 )
                 total_for_this_config += time
 

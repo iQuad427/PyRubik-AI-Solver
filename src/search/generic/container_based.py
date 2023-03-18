@@ -42,7 +42,7 @@ class ContainerBasedGameEngine(GenericGameEngine):
             if state.depth < self.max_depth:
                 for action in state.get_legal_actions():
                     self.insert_to_container(
-                        state.generate_successor(action),
+                        state.generate_successor([action]),
                         container,
                         score,
                     )
