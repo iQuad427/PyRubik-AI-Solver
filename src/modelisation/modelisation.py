@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 
 FACETS = 9
@@ -48,21 +50,29 @@ class Cube:
 
         return np.array(model)
 
-    def permute(self, perm):
+    def scramble(self, times: int):
+        shuffle = random.choices([perm for perm in self.perms], k=times)
+
+        self.permute(shuffle)
+
+        return shuffle
+
+    def permute(self, perms: list[str]):
         """
         Apply a permutation to the current cube state
 
-        :param perm: letter corresponding to the perm we want to apply
+        :param perms: list of letters corresponding to the perm we want to apply
         :return: itself
 
         Inspiration: https://my.numworks.com/python/schraf/rubik
         """
-        save = list(self.cube)
-        mvt = self.perms[perm]
-        for t in mvt:
-            u = (t[-1],) + t
-            for i, v in enumerate(t):
-                self.cube[v] = save[u[i]]
+        for perm in perms:
+            save = list(self.cube)
+            mvt = self.perms[perm]
+            for t in mvt:
+                u = (t[-1],) + t
+                for i, v in enumerate(t):
+                    self.cube[v] = save[u[i]]
 
         return self
 
@@ -226,13 +236,16 @@ if __name__ == '__main__':
     print(generate_crown_moves())
 
     cube = Cube(3)
+    scramble = cube.scramble(5)
 
-    print(cube.permute("1M"))
-    print(cube.permute("1M"))
-    print(cube.permute("1E"))
-    print(cube.permute("1E"))
-    print(cube.permute("1S"))
-    print(cube.permute("1S"))
+    print(scramble)
+
+    # print(cube.permute("1M"))
+    # print(cube.permute("1M"))
+    # print(cube.permute("1E"))
+    # print(cube.permute("1E"))
+    # print(cube.permute("1S"))
+    # print(cube.permute("1S"))
 
     print(cube)
     print(final_position(cube.cube))
