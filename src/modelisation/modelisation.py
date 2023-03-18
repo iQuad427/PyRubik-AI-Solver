@@ -1,4 +1,5 @@
 import random
+from typing import List
 
 import numpy as np
 
@@ -76,6 +77,9 @@ class Cube:
             print(self)
 
         return perms
+
+    def get_face_colors(self, face: int) -> List[str]:
+        return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n]
 
 
 def get_position_index(face: int, row: int, col: int):
