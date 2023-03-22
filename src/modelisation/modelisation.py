@@ -47,7 +47,7 @@ class Cube:
             self.cube = self._generate_cube()
 
         self.perms = generate_lateral_moves()
-        self.perms.update(generate_crown_moves())
+        # self.perms.update(generate_crown_moves())
         self.perms.update(generate_inverse_moves(self.perms))
 
     def __str__(self):
@@ -96,7 +96,7 @@ class Cube:
         Apply a permutation to the current cube state
 
         :param perms: list of letters corresponding to the perm we want to apply
-        :return: itself
+        :return: a new cube on which the permutations were applied
 
         Inspiration: https://my.numworks.com/python/schraf/rubik
         """
