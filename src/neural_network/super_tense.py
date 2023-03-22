@@ -4,10 +4,12 @@ from typing import List
 
 import numpy as np
 from tensorflow import keras
-
-from src.modelisation.modelisation import Cube
+import tensorflow as tf
+from src.modelisation.modelisation import Cube, invert_moves
 
 NUMBER_OF_INPUTS = 6 * 9 * 6
+
+print(tf.config.list_physical_devices("GPU"))
 
 
 def retrieve_possible_outputs(n, min_n=1) -> List[List[str]]:
@@ -46,8 +48,8 @@ def create_model(n) -> keras.Model:
 
     model = keras.Model(inputs=inputs, outputs=outputs)
     model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=0.001),
-        loss=keras.losses.CategoricalCrossentropy(),
+        optimizer=keras.optimizers.Adam(learning_rate=0.0001),
+        loss=keras.losses.MeanSquaredError(),
         metrics=["accuracy"],
     )
 
@@ -55,14 +57,6 @@ def create_model(n) -> keras.Model:
 
 
 x_data = []
-
-
-def invert_moves(moves):
-    inverted_moves = list(
-        map(lambda x: x.replace("'", "") if "'" in x else f"{x}'", reversed(moves))
-    )
-
-    return inverted_moves
 
 
 number_of_trainings = 100
@@ -98,9 +92,9 @@ def get_cube_data_input(cube: Cube):
     return input_data
 
 
-for i in range(number_of_trainings + 100):
+for i in range(number_of_trainings + 10):
     cube = Cube(3)
-    permutations = cube.scramble(random.randint(3, 20))
+    permutations = cube.scramble(random.randint(10, 10))
     inverted_permutations = invert_moves(permutations)[:number_of_steps_ahead]
     cube_data = get_cube_data_input(cube)
     trainings_inputs.append(cube_data)
@@ -123,7 +117,7 @@ for i in range(10):
     )
 
     actual_response = all_possible_outputs[
-        (trainings_outputs[number_of_trainings]).index(1)
+        (trainings_outputs[number_of_trainings + i]).index(1)
     ]
     possibles = []
     print(f"Actual response: {actual_response}", end=" ")
@@ -137,4 +131,4 @@ for i in range(10):
     if actual_response in possibles:
         a += 1
 
-print(f"Score: {a}/100")
+print(f"Score: {a}/10")

@@ -18,23 +18,18 @@ moves = [
 ]  # up, right, front, left, back, down (order defined by the model)
 colors = ["Y", "B", "R", "G", "O", "W"]  # yellow, blue, red, green, orange, white
 
-face_color = {
-    "Y": 0,
-    "B": 1,
-    "R": 2,
-    "G": 3,
-    "O": 4,
-    "W": 5
-}
+face_color = {"Y": 0, "B": 1, "R": 2, "G": 3, "O": 4, "W": 5}
 
-dist = np.array([
-    [0, 1, 1, 1, 1, 2],
-    [1, 0, 1, 2, 1, 1],
-    [1, 1, 0, 1, 2, 1],
-    [1, 2, 1, 0, 1, 1],
-    [1, 1, 2, 1, 0, 1],
-    [2, 1, 1, 1, 1, 0],
-])
+dist = np.array(
+    [
+        [0, 1, 1, 1, 1, 2],
+        [1, 0, 1, 2, 1, 1],
+        [1, 1, 0, 1, 2, 1],
+        [1, 2, 1, 0, 1, 1],
+        [1, 1, 2, 1, 0, 1],
+        [2, 1, 1, 1, 1, 0],
+    ]
+)
 
 
 class Cube:
@@ -117,7 +112,7 @@ class Cube:
                     new_cube[v] = save[u[i]]
 
     def get_face_colors(self, face: int) -> List[str]:
-        return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n]
+        return self.cube[face * self.n * self.n : (face + 1) * self.n * self.n]
 
     def get_color(self, face: int, row: int, col: int) -> List[str]:
         return self.cube[face * self.n * self.n + row * self.n + col]
@@ -339,3 +334,11 @@ if __name__ == "__main__":
     # print(cube.permute("1E"))
     # print(cube.permute("1S"))
     # print(cube.permute("1S"))
+
+
+def invert_moves(moves):
+    inverted_moves = list(
+        map(lambda x: x.replace("'", "") if "'" in x else f"{x}'", reversed(moves))
+    )
+
+    return inverted_moves
