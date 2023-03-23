@@ -1,35 +1,8 @@
 import random
 from typing import List
 
-import numpy as np
-
-NB_FACES_CUBE = 6
-FACETS = 9
-COLORS = "RBWVOJ"
-COLORS_INT = [0, 1, 2, 3, 4, 5]
-n = 3
-moves = [
-    "U",
-    "L",
-    "F",
-    "R",
-    "B",
-    "D",
-]  # up, right, front, left, back, down (order defined by the model)
-colors = ["Y", "B", "R", "G", "O", "W"]  # yellow, blue, red, green, orange, white
-
-face_color = {"Y": 0, "B": 1, "R": 2, "G": 3, "O": 4, "W": 5}
-
-dist = np.array(
-    [
-        [0, 1, 1, 1, 1, 2],
-        [1, 0, 1, 2, 1, 1],
-        [1, 1, 0, 1, 2, 1],
-        [1, 2, 1, 0, 1, 1],
-        [1, 1, 2, 1, 0, 1],
-        [2, 1, 1, 1, 1, 0],
-    ]
-)
+from data import *
+from utils import *
 
 
 class Cube:
@@ -44,6 +17,9 @@ class Cube:
         self.perms = generate_lateral_moves()
         # self.perms.update(generate_crown_moves())
         self.perms.update(generate_inverse_moves(self.perms))
+
+    def __bool__(self):
+        return final_position(self.cube)
 
     def __str__(self):
         return """
@@ -112,7 +88,7 @@ class Cube:
                     new_cube[v] = save[u[i]]
 
     def get_face_colors(self, face: int) -> List[str]:
-        return self.cube[face * self.n * self.n : (face + 1) * self.n * self.n]
+        return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n]
 
     def get_color(self, face: int, row: int, col: int) -> List[str]:
         return self.cube[face * self.n * self.n + row * self.n + col]
@@ -287,43 +263,13 @@ def generate_lateral_moves():
     return permutations
 
 
-def generate_inverse_moves(moves_dict):
-    inverted_moves = {}
-    for move in moves_dict:
-        inverted_moves[f"{move}'"] = invert_permutation(moves_dict[move])
-
-    return inverted_moves
-
-
-def invert_permutation(lst):
-    return [tuple(reversed(t)) for t in reversed(lst)]
-
-
-def final_position(pos):
-    """
-    Verify if the position corresponds to a solution
-
-    :param pos: the current position to test
-    :return: whether the position is a solution or not
-
-    # Inspiration: https://my.numworks.com/python/schraf/rubik
-    """
-    color, nb = pos[0], 1
-    for facet in pos:
-        if facet != color:
-            color = facet
-            nb += 1
-    return nb == len(
-        COLORS
-    )  # we check if the number of color changes corresponds to the number of colors
-
-
 if __name__ == "__main__":
     cube = Cube(3)
     # scramble = cube.scramble(5)
     #
     # print(scramble)
-    cube.permute(["U'", "L", "1M'", "L", "B"])
+    # cube.permute(["U'", "L", "L", "B"])
+    # print(cube)
 
     # cube.permute(["1S"])
     # cube.permute(["1E'"])
@@ -335,10 +281,3 @@ if __name__ == "__main__":
     # print(cube.permute("1S"))
     # print(cube.permute("1S"))
 
-
-def invert_moves(moves):
-    inverted_moves = list(
-        map(lambda x: x.replace("'", "") if "'" in x else f"{x}'", reversed(moves))
-    )
-
-    return inverted_moves
