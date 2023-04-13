@@ -1,5 +1,5 @@
 from src.search.models.game_state import GameState
-from src.modelisation.modelisation import NB_FACES_CUBE
+from src.modelisation.data import NB_FACES_CUBE
 from src.modelisation.modelisation import get_position_index
 
 

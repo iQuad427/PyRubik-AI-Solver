@@ -1,4 +1,4 @@
-from src.modelisation.modelisation import NB_FACES_CUBE, get_position_index, face_color, dist
+from src.modelisation.data import NB_FACES_CUBE, face_color, dist
 from src.search.models.game_state import GameState
 
 

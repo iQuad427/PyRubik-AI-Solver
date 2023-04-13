@@ -2,7 +2,6 @@ import copy
 import random
 
 from src.modelisation.modelisation import Cube, invert_moves
-from src.search.evaluation.distance import distance_to_good_face_evaluation_function
 from src.search.evaluation.membership import face_color_membership_evaluation_function
 
 

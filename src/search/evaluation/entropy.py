@@ -1,6 +1,6 @@
 import math
 
-from src.modelisation.modelisation import NB_FACES_CUBE
+from src.modelisation.data import NB_FACES_CUBE
 from src.search.models.game_state import GameState
 
 

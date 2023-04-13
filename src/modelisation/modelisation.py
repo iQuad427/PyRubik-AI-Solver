@@ -1,8 +1,8 @@
 import random
 from typing import List
+import numpy as np
 
-from data import *
-from utils import *
+from src.modelisation.data import colors, n, moves, resolved_cube, edges, corners, COLORS
 
 
 class Cube:
@@ -16,6 +16,7 @@ class Cube:
 
         self.perms = generate_lateral_moves()
         # self.perms.update(generate_crown_moves())
+        # self.perms.update(generate_double_moves(self.perms))
         self.perms.update(generate_inverse_moves(self.perms))
 
     def __bool__(self):
@@ -263,21 +264,104 @@ def generate_lateral_moves():
     return permutations
 
 
-if __name__ == "__main__":
-    cube = Cube(3)
-    # scramble = cube.scramble(5)
-    #
-    # print(scramble)
-    # cube.permute(["U'", "L", "L", "B"])
-    # print(cube)
+def generate_double_moves(perms: dict):
+    permutation = {}
+    for move in moves:
+        permutation[f"{move}2"] = perms[move] * 2
 
-    # cube.permute(["1S"])
-    # cube.permute(["1E'"])
+    return permutation
 
-    # print(cube.permute("1M"))
-    # print(cube.permute("1M"))
-    # print(cube.permute("1E"))
-    # print(cube.permute("1E"))
-    # print(cube.permute("1S"))
-    # print(cube.permute("1S"))
 
+def invert_moves(moves):
+    inverted_moves = list(
+        map(lambda x: x.replace("'", "") if "'" in x else f"{x}'", reversed(moves))
+    )
+
+    return inverted_moves
+
+
+def generate_inverse_moves(moves_dict):
+    inverted_moves = {}
+    for move in moves_dict:
+        inverted_moves[f"{move}'"] = invert_permutation(moves_dict[move])
+
+    return inverted_moves
+
+
+def invert_permutation(lst):
+    return [tuple(reversed(t)) for t in reversed(lst)]
+
+
+def final_position(pos):
+    """
+    Verify if the position corresponds to a solution
+
+    :param pos: the current position to test
+    :return: whether the position is a solution or not
+
+    # Inspiration: https://my.numworks.com/python/schraf/rubik
+    """
+    color, nb = pos[0], 1
+    for facet in pos:
+        if facet != color:
+            color = facet
+            nb += 1
+    return nb == len(
+        COLORS
+    )  # we check if the number of color changes corresponds to the number of colors
+
+
+def define_permutation(moves: list[tuple[int, ...]]):
+    """
+    Simplify the permutation associated to a list of basic permutations
+    :param moves: list of permutation
+
+    use: define_permutation([perms[move] for move in moves])
+            where:  perms is the dict of moves -> permutation
+                    moves is the list of movements (U, F, D, R, L, B)
+    """
+    fake_cube = [i for i in range(54)]
+    apply_permutation(fake_cube, moves)
+
+    return fake_cube
+
+
+def permute_from_defined_permutation(cube: Cube, indexed_cube: list[int]):
+    model = []
+    for index in indexed_cube:
+        model.append(cube.cube[index])
+
+    return np.array(model)
+
+
+def apply_permutation(num: list[int], perm: list[tuple[int, ...]]):
+    save = list(num)
+    for t in perm:
+        u = (t[-1],) + t
+        for i, v in enumerate(t):
+            num[v] = save[u[i]]
+
+
+def face_is_complete(face: int, cube: Cube):
+    colors = cube.get_face_colors(face)
+    for color in colors:
+        if color != colors[0]:
+            return False
+
+    return True
+
+
+def verify_corner(corner: int, cube: Cube):
+    return [resolved_cube[facet] for facet in corners[corner]] == [cube.cube[facet] for facet in corners[corner]]
+
+
+def verify_edge(edge: int, cube: Cube):
+    return [resolved_cube[facet] for facet in edges[edge]] == [cube.cube[facet] for facet in edges[edge]]
+
+
+def compute_distance_to_position(piece: int, cube: Cube):
+    # TODO: implement (need to differentiate corners and edges, either two function or parameter)
+    pass
+
+# TODO: implement breadth first to compute the lowest possible number of moves to put the piece at the right position
+#  using basic moves from perm dictionary of the cube
