@@ -2,6 +2,7 @@ import copy
 import random
 
 from src.modelisation.modelisation import Cube, invert_moves
+from src.search.evaluation.entropy import entropy_based_score_evaluation_function
 from src.search.evaluation.membership import face_color_membership_evaluation_function
 
 
@@ -29,6 +30,7 @@ class GeneticAlgorithm:
         ]
 
         for generation_count in range(self.nb_generations):
+            print("<============================>")
             print(f"Generation {generation_count}")
             gen = copy.deepcopy(generation)
             generation = self.next_generation(generation)
@@ -38,7 +40,17 @@ class GeneticAlgorithm:
 
             print(len(generation))
 
-            print(min([self.evaluate(individual) for individual in generation]))
+            best_score = self.evaluate(generation[0])
+            best_ind = generation[0]
+            for individual in generation:
+                if self.evaluate(individual) < best_score:
+                    best_ind = individual
+
+            print(f"best : {best_score}")
+            print(best_ind)
+            print(cube.permute(best_ind))
+
+            # print(min([self.evaluate(individual) for individual in generation]))
 
     def mutate(self, individual):
         if random.random() < self.mutation_rate:
@@ -153,12 +165,13 @@ class GeneticAlgorithm:
     def evaluate(self, individual):
         cube = self.cube.permute(individual)
 
-        return self.evaluation_function(Cube(3, cube))
+        return self.evaluation_function(Cube(cube.n, cube))
 
 
 if __name__ == "__main__":
-    cube = Cube(3)
-    cube.scramble(4)
+    cube = Cube(2)
+    # print(cube.scramble(8))
+    cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
     GeneticAlgorithm(
-        100, 1000, 4, 0.2, cube, face_color_membership_evaluation_function
+        100, 200, 15, 0.5, cube, entropy_based_score_evaluation_function
     ).run()
