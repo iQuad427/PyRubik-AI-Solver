@@ -9,13 +9,13 @@ from src.search.evaluation.membership import face_color_membership_evaluation_fu
 
 class GeneticAlgorithm:
     def __init__(
-        self,
-        nb_individuals,
-        nb_generations,
-        length_individual,
-        mutation_rate,
-        cube: Cube,
-        evaluation_function,
+            self,
+            nb_individuals,
+            nb_generations,
+            length_individual,
+            mutation_rate,
+            cube: Cube,
+            evaluation_function,
     ):
         self.nb_individuals = nb_individuals
         self.nb_generations = nb_generations
@@ -52,8 +52,8 @@ class GeneticAlgorithm:
                     mutated = self.mutate(individual)
                     if self.evaluate(individual) != self.evaluate(mutated):
                         mate_pool.append(mutated)
-            mate_pool.extend(self.select_best(current_generation, int(len(current_generation)/10)))
-            print(mate_pool)
+            mate_pool.extend(self.select_best(current_generation, int(len(current_generation) / 10)))
+            # print(mate_pool)
 
             generation = self.select_best(mate_pool, len(generation))
             check_duplicates_generation = []
@@ -64,18 +64,21 @@ class GeneticAlgorithm:
 
             best_score = self.evaluate(generation[0])
             best_ind = generation[0]
+
             for individual in generation:
-                if self.evaluate(individual) < best_score:
+                new_score = self.evaluate(individual)
+                if new_score < best_score:
+                    best_score = new_score
                     best_ind = individual
 
             print(f"best : {best_score}")
             print(best_ind)
+
             if best_score == 0:
                 break
-            #print(cube.permute(best_ind))
 
+            # print(cube.permute(best_ind))
             # print(min([self.evaluate(individual) for individual in generation]))
-
 
     def select_best(self, generation, trunc_value):
         new_generation = []
@@ -162,7 +165,8 @@ class GeneticAlgorithm:
     def selection(self, generation):
 
         # Evaluate each individual
-        evaluated = [1/self.evaluate(individual) if self.evaluate(individual) !=0 else 100 for individual in generation]
+        evaluated = [1 / self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
+                     generation]
 
         return random.choices(generation, weights=evaluated, k=self.nb_individuals)
 
@@ -182,7 +186,7 @@ class GeneticAlgorithm:
         list_evaluated_generation.sort()
 
         # Make the 5% best take over 45% of the population
-        for i in range(int(len(generation)*0.05)):
+        for i in range(int(len(generation) * 0.05)):
             for j in range(9):
                 new_generation.append(list_evaluated_generation[i][1])
 
@@ -221,20 +225,18 @@ class GeneticAlgorithm:
         #     individual1 = x[0]
         # if self.evaluate(x[1]) < self.evaluate(individual2):
         #     individual2 = x[1]
-        #if self.evaluate(x[0]) <= self.evaluate(individual1):
+        # if self.evaluate(x[0]) <= self.evaluate(individual1):
         acceptable_children.append(x[0])
-        #if self.evaluate(x[1]) <= self.evaluate(individual2):
+        # if self.evaluate(x[1]) <= self.evaluate(individual2):
         acceptable_children.append(x[1])
 
         # return [individual1, individual2]
         return acceptable_children
 
-
     def evaluate(self, individual):
         cube = self.cube.permute(individual)
 
         return self.evaluation_function(Cube(cube.n, cube))
-
 
     # def evaluate(self, perms):
     #     new_cube = list(self.cube.cube)
@@ -253,13 +255,14 @@ class GeneticAlgorithm:
     #     return min
 
 
-
 if __name__ == "__main__":
     cube = Cube(2)
-    # print(cube.scramble(8))
+    # print(cube.scramble(20))
     cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'"])
     GeneticAlgorithm(
-        100, 500, 30, 0.5, cube, entropy_based_score_evaluation_function
+        300, 200, 30, 1, cube, distance_to_good_face_evaluation_function
     ).run()
+
+    print(cube)

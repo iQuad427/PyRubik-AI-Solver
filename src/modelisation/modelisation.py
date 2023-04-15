@@ -336,6 +336,37 @@ def define_permutation(moves: list[tuple[int, ...]]):
     return fake_cube
 
 
+def simplify_list_of_perms(perms: list[str]):
+    """
+    Method to simplify a list of moves
+
+    :param perms: list of sequential move to perform
+    :return: simplified list of move to do the same thing
+
+    example :
+        - previous : ['B', "B'", 'B', "D'", 'B', 'D', 'B', "B'", 'N', "D'", "F'", 'L', "R'", "D'", 'N', 'L', "F'", 'U', 'N', 'D', "F'", 'F', 'D', "D'", 'N', "L'", 'N', 'D', 'N', "D'"]
+        - becomes : ['B', "D'", 'B', "F'", 'L', "R'", "D'", 'L', "F'", 'U', 'D', "L'"]
+    """
+    new_perms = []
+
+    for perm in perms:
+        print(perm)
+        if perm == "N":
+            continue
+
+        if new_perms:
+            top = new_perms[-1]
+            print("top :", top)
+
+            if top == perm + "'" or perm == top + "'":
+                new_perms.pop()
+                continue
+
+        new_perms.append(perm)
+
+    return new_perms
+
+
 def permute_from_defined_permutation(cube: Cube, indexed_cube: list[int]):
     model = []
     for index in indexed_cube:
@@ -376,3 +407,11 @@ def compute_distance_to_position(piece: int, cube: Cube):
 # TODO: implement breadth first to compute the lowest possible number of moves to put the piece at the right position
 #  using basic moves from perm dictionary of the cube
 
+
+if __name__ == '__main__':
+    test = ['B', "B'", 'B', "D'", 'B', 'D', 'B', "B'", 'N', "D'", "F'", 'L', "R'", "D'", 'N', 'L', "F'", 'U', 'N', 'D', "F'", 'F', 'D', "D'", 'N', "L'", 'N', 'D', 'N', "D'"]
+    res = simplify_list_of_perms(test)
+    print(res)
+
+    print(Cube(2).permute(test))
+    print(Cube(2).permute(res))
