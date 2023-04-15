@@ -8,8 +8,6 @@ def distance_to_good_face_evaluation_function(state: GameState):
     :param state: the state to evaluate
     :return: score of the state
     """
-    if state.cube.n % 2 != 1:
-        raise NotImplementedError("Does not work for cubes with pair number of edges")
 
     total_score = 0
 

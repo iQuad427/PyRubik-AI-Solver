@@ -15,7 +15,7 @@ class Cube:
             self.cube = self._generate_cube()
 
         self.perms = generate_lateral_moves(self.n)
-        # self.perms.update(generate_crown_moves())
+        self.perms.update(generate_crown_moves(self.n))
         # self.perms.update(generate_double_moves(self.perms))
         self.perms.update(generate_inverse_moves(self.perms))
 
@@ -128,26 +128,13 @@ def get_position_index(n: int, face: int, row: int, col: int):
     return n * n * face + n * row + col
 
 
-def generate_crown_moves():
+def generate_crown_moves(n: int):
     # TODO : moving centers might be bad for the algorithms -> might keep only non-center crowns permutation
     permutations = {}
 
     # Transversal crown permutations
     for i in range(1, n - 1):
-        permutation_m = []
-        permutation_e = []
-        permutation_s = []
-        for j in range(n):
-            # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
-            permutation_m.append(
-                (
-                    get_position_index(n, 0, j, i),
-                    get_position_index(n, 2, j, i),
-                    get_position_index(n, 5, j, i),
-                    get_position_index(n, 4, n - j - 1, n - i - 1),
-                )
-            )
-        if n % 2 == 0 or i != n // 2:
+        # if n % 2 == 0 or i != n // 2:
             permutation_m = []
             permutation_e = []
             permutation_s = []
@@ -386,5 +373,4 @@ def compute_distance_to_position(piece: int, cube: Cube):
 
 # TODO: implement breadth first to compute the lowest possible number of moves to put the piece at the right position
 #  using basic moves from perm dictionary of the cube
-
 

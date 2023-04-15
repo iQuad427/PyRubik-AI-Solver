@@ -2,6 +2,7 @@ import copy
 import random
 
 from src.modelisation.modelisation import Cube, invert_moves
+from src.search.evaluation.distance import distance_to_good_face_evaluation_function
 from src.search.evaluation.entropy import entropy_based_score_evaluation_function
 from src.search.evaluation.membership import face_color_membership_evaluation_function
 
@@ -169,9 +170,10 @@ class GeneticAlgorithm:
 
 
 if __name__ == "__main__":
+    # TODO: Add NOP operations in the GA possibility
     cube = Cube(2)
     # print(cube.scramble(8))
     cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
     GeneticAlgorithm(
-        100, 200, 15, 0.5, cube, entropy_based_score_evaluation_function
+        100, 200, 20, 0.5, cube, distance_to_good_face_evaluation_function
     ).run()
