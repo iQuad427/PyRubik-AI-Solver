@@ -15,7 +15,7 @@ def face_color_membership_evaluation_function(state: GameState):
     total_score = 0
 
     for i in range(NB_FACES_CUBE):
-        center_color = state.cube.cube[get_position_index(i, state.cube.n//2, state.cube.n//2)]
+        center_color = state.cube.cube[get_position_index(state.cube.n, i, state.cube.n//2, state.cube.n//2)]
         colors = state.cube.get_face_colors(i)
 
         score = 0

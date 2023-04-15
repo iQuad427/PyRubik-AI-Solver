@@ -18,6 +18,7 @@ class Cube:
         self.perms.update(generate_crown_moves(self.n))
         # self.perms.update(generate_double_moves(self.perms))
         self.perms.update(generate_inverse_moves(self.perms))
+        self.perms["N"] = None
 
     def __bool__(self):
         return final_position(self.cube)
@@ -102,12 +103,13 @@ class Cube:
 
     def _permute(self, new_cube, perms):
         for perm in perms:
-            save = list(new_cube)
-            mvt = self.perms[perm]
-            for t in mvt:
-                u = (t[-1],) + t
-                for i, v in enumerate(t):
-                    new_cube[v] = save[u[i]]
+            if perm != "N":
+                save = list(new_cube)
+                mvt = self.perms[perm]
+                for t in mvt:
+                    u = (t[-1],) + t
+                    for i, v in enumerate(t):
+                        new_cube[v] = save[u[i]]
 
     def get_face_colors(self, face: int) -> List[str]:
         return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n - 1]
