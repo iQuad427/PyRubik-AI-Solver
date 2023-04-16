@@ -257,12 +257,12 @@ class GeneticAlgorithm:
 
 if __name__ == "__main__":
     cube = Cube(2)
-    # print(cube.scramble(20))
-    cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
+    print(cube.scramble(20))
+    # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'"])
     GeneticAlgorithm(
-        300, 200, 30, 1, cube, distance_to_good_face_evaluation_function
+        1000, 200, 100, 0.5, cube, distance_to_good_face_evaluation_function
     ).run()
 
     print(cube)
