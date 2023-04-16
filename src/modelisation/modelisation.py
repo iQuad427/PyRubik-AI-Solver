@@ -1,35 +1,8 @@
 import random
 from typing import List
-
 import numpy as np
 
-NB_FACES_CUBE = 6
-FACETS = 9
-COLORS = "RBWVOJ"
-COLORS_INT = [0, 1, 2, 3, 4, 5]
-n = 3
-moves = [
-    "U",
-    "L",
-    "F",
-    "R",
-    "B",
-    "D",
-]  # up, right, front, left, back, down (order defined by the model)
-colors = ["Y", "B", "R", "G", "O", "W"]  # yellow, blue, red, green, orange, white
-
-face_color = {"Y": 0, "B": 1, "R": 2, "G": 3, "O": 4, "W": 5}
-
-dist = np.array(
-    [
-        [0, 1, 1, 1, 1, 2],
-        [1, 0, 1, 2, 1, 1],
-        [1, 1, 0, 1, 2, 1],
-        [1, 2, 1, 0, 1, 1],
-        [1, 1, 2, 1, 0, 1],
-        [2, 1, 1, 1, 1, 0],
-    ]
-)
+from src.modelisation.data import colors, n, moves, resolved_cube, edges, corners, COLORS
 
 
 class Cube:
@@ -41,36 +14,62 @@ class Cube:
         else:
             self.cube = self._generate_cube()
 
-        self.perms = generate_lateral_moves()
-        self.perms.update(generate_crown_moves())
+        self.perms = generate_lateral_moves(self.n)
+        self.perms.update(generate_crown_moves(self.n))
+        # self.perms.update(generate_double_moves(self.perms))
         self.perms.update(generate_inverse_moves(self.perms))
+        self.perms["N"] = None
+
+    def __bool__(self):
+        return final_position(self.cube)
 
     def __str__(self):
-        return """
-                        0----|----|----|
-                        |  {0} |  {1} |  {2} |
-                        |----|----|----|
-                        |  {3} |  {4} |  {5} |
-                        |----|----|----|
-                        |  {6} |  {7} |  {8} |
-                        |----|----|----|
-        1----|----|----|2----|----|----|3----|----|----|4----|----|----|
-        |  {9} |  {10} |  {11} ||  {18} |  {19} |  {20} ||  {27} |  {28} |  {29} ||  {36} |  {37} |  {38} |
-        |----|----|----||----|----|----||----|----|----||----|----|----|
-        |  {12} |  {13} |  {14} ||  {21} |  {22} |  {23} ||  {30} |  {31} |  {32} ||  {39} |  {40} |  {41} |
-        |----|----|----||----|----|----||----|----|----||----|----|----|
-        |  {15} |  {16} |  {17} ||  {24} |  {25} |  {26} ||  {33} |  {34} |  {35} ||  {42} |  {43} |  {44} |
-        |----|----|----||----|----|----||----|----|----||----|----|----|
-                        5----|----|----|
-                        |  {45} |  {46} |  {47} |
-                        |----|----|----|
-                        |  {48} |  {49} |  {50} |
-                        |----|----|----|
-                        |  {51} |  {52} |  {53} |
-                        |----|----|----|
-        """.format(
-            *[self.cube[i] for i in range(self.n * self.n * 6)]
-        )
+        if self.n == 3:
+            return """
+                            0----|----|----|
+                            |  {0} |  {1} |  {2} |
+                            |----|----|----|
+                            |  {3} |  {4} |  {5} |
+                            |----|----|----|
+                            |  {6} |  {7} |  {8} |
+                            |----|----|----|
+            1----|----|----|2----|----|----|3----|----|----|4----|----|----|
+            |  {9} |  {10} |  {11} ||  {18} |  {19} |  {20} ||  {27} |  {28} |  {29} ||  {36} |  {37} |  {38} |
+            |----|----|----||----|----|----||----|----|----||----|----|----|
+            |  {12} |  {13} |  {14} ||  {21} |  {22} |  {23} ||  {30} |  {31} |  {32} ||  {39} |  {40} |  {41} |
+            |----|----|----||----|----|----||----|----|----||----|----|----|
+            |  {15} |  {16} |  {17} ||  {24} |  {25} |  {26} ||  {33} |  {34} |  {35} ||  {42} |  {43} |  {44} |
+            |----|----|----||----|----|----||----|----|----||----|----|----|
+                            5----|----|----|
+                            |  {45} |  {46} |  {47} |
+                            |----|----|----|
+                            |  {48} |  {49} |  {50} |
+                            |----|----|----|
+                            |  {51} |  {52} |  {53} |
+                            |----|----|----|
+            """.format(
+                *[self.cube[i] for i in range(self.n * self.n * 6)]
+            )
+        elif self.n == 2:
+            return """            
+                           0----|----|  
+                           |  {0} |  {1} |  
+                           |----|----| 
+                           |  {2} |  {3} | 
+                           |----|----| 
+                1----|----|2----|----|3----|----|4----|----|   
+                |  {4} |  {5} ||  {8} |  {9} ||  {12} |  {13} ||  {16} |  {17} |   
+                |----|----||----|----||----|----||----|----|   
+                |  {6} |  {7} ||  {10} |  {11} ||  {14} |  {15} ||  {18} |  {19} |   
+                |----|----||----|----||----|----||----|----|   
+                           5----|----| 
+                           |  {20} |  {21} | 
+                           |----|----| 
+                           |  {22} |  {23} | 
+                           |----|----| 
+                    """.format(
+                *[self.cube[i] for i in range(self.n * self.n * 6)]
+            )
 
     def _generate_cube(self):
         model = []
@@ -91,7 +90,7 @@ class Cube:
         Apply a permutation to the current cube state
 
         :param perms: list of letters corresponding to the perm we want to apply
-        :return: itself
+        :return: a new cube on which the permutations were applied
 
         Inspiration: https://my.numworks.com/python/schraf/rubik
         """
@@ -104,15 +103,16 @@ class Cube:
 
     def _permute(self, new_cube, perms):
         for perm in perms:
-            save = list(new_cube)
-            mvt = self.perms[perm]
-            for t in mvt:
-                u = (t[-1],) + t
-                for i, v in enumerate(t):
-                    new_cube[v] = save[u[i]]
+            if perm != "N":
+                save = list(new_cube)
+                mvt = self.perms[perm]
+                for t in mvt:
+                    u = (t[-1],) + t
+                    for i, v in enumerate(t):
+                        new_cube[v] = save[u[i]]
 
     def get_face_colors(self, face: int) -> List[str]:
-        return self.cube[face * self.n * self.n : (face + 1) * self.n * self.n]
+        return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n - 1]
 
     def get_color(self, face: int, row: int, col: int) -> List[str]:
         return self.cube[face * self.n * self.n + row * self.n + col]
@@ -126,30 +126,17 @@ class Cube:
         return int_data
 
 
-def get_position_index(face: int, row: int, col: int):
+def get_position_index(n: int, face: int, row: int, col: int):
     return n * n * face + n * row + col
 
 
-def generate_crown_moves():
+def generate_crown_moves(n: int):
     # TODO : moving centers might be bad for the algorithms -> might keep only non-center crowns permutation
     permutations = {}
 
     # Transversal crown permutations
     for i in range(1, n - 1):
-        permutation_m = []
-        permutation_e = []
-        permutation_s = []
-        for j in range(n):
-            # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
-            permutation_m.append(
-                (
-                    get_position_index(0, j, i),
-                    get_position_index(2, j, i),
-                    get_position_index(5, j, i),
-                    get_position_index(4, n - j - 1, n - i - 1),
-                )
-            )
-        if n % 2 == 0 or i != n // 2:
+        # if n % 2 == 0 or i != n // 2:
             permutation_m = []
             permutation_e = []
             permutation_s = []
@@ -157,30 +144,30 @@ def generate_crown_moves():
                 # M - Transversal crown permutations - starts from face 1 (then 2, 3, 4)
                 permutation_m.append(
                     (
-                        get_position_index(0, j, i),
-                        get_position_index(2, j, i),
-                        get_position_index(5, j, i),
-                        get_position_index(4, n - j - 1, n - i - 1),
+                        get_position_index(n, 0, j, i),
+                        get_position_index(n, 2, j, i),
+                        get_position_index(n, 5, j, i),
+                        get_position_index(n, 4, n - j - 1, n - i - 1),
                     )
                 )
 
                 # E - Sagittal crown permutations - starts from face 0 (then 2, 5, 4)
                 permutation_e.append(
                     (
-                        get_position_index(1, i, j),
-                        get_position_index(2, i, j),
-                        get_position_index(3, i, j),
-                        get_position_index(4, i, j),
+                        get_position_index(n, 1, i, j),
+                        get_position_index(n, 2, i, j),
+                        get_position_index(n, 3, i, j),
+                        get_position_index(n, 4, i, j),
                     )
                 )
 
                 # S - Frontal crown permutation - starts from face 0 (then 3', 5, 1')
                 permutation_s.append(
                     (
-                        get_position_index(0, i, j),
-                        get_position_index(3, j, i),
-                        get_position_index(5, n - i - 1, n - j - 1),
-                        get_position_index(1, n - j - 1, i),
+                        get_position_index(n, 0, i, j),
+                        get_position_index(n, 3, j, i),
+                        get_position_index(n, 5, n - i - 1, n - j - 1),
+                        get_position_index(n, 1, n - j - 1, i),
                     )
                 )
 
@@ -191,17 +178,17 @@ def generate_crown_moves():
     return permutations
 
 
-def generate_lateral_moves():
+def generate_lateral_moves(n: int):
     permutations = {}
 
     for face, move in enumerate(moves):
         # corners permutation : 1
         permutation = [
             (
-                get_position_index(face, 0, 0),
-                get_position_index(face, 0, 2),
-                get_position_index(face, 2, 2),
-                get_position_index(face, 2, 0),
+                get_position_index(n, face, 0, 0),
+                get_position_index(n, face, 0, n - 1),
+                get_position_index(n, face, n - 1, n - 1),
+                get_position_index(n, face, n - 1, 0),
             )
         ]
 
@@ -209,10 +196,10 @@ def generate_lateral_moves():
         for i in range(1, n):
             permutation.append(
                 (
-                    get_position_index(face, 0, i),
-                    get_position_index(face, i, n - 1),
-                    get_position_index(face, n - 1, n - i - 1),
-                    get_position_index(face, n - i - 1, 0),
+                    get_position_index(n, face, 0, i),
+                    get_position_index(n, face, i, n - 1),
+                    get_position_index(n, face, n - 1, n - i - 1),
+                    get_position_index(n, face, n - i - 1, 0),
                 )
             )
 
@@ -221,10 +208,10 @@ def generate_lateral_moves():
             for j in range(n):
                 permutation.append(
                     (  # 0 : Up face - 4, 3, 2, 1
-                        get_position_index(4, 0, j),
-                        get_position_index(3, 0, j),
-                        get_position_index(2, 0, j),
-                        get_position_index(1, 0, j),
+                        get_position_index(n, 4, 0, j),
+                        get_position_index(n, 3, 0, j),
+                        get_position_index(n, 2, 0, j),
+                        get_position_index(n, 1, 0, j),
                     )
                 )
 
@@ -232,20 +219,20 @@ def generate_lateral_moves():
             for j in range(n):
                 permutation.append(
                     (  # 1 : Left face - 0, 2, 5, 4
-                        get_position_index(0, j, 0),
-                        get_position_index(2, j, 0),
-                        get_position_index(5, j, 0),
-                        get_position_index(4, n - j - 1, n - 1),
+                        get_position_index(n, 0, j, 0),
+                        get_position_index(n, 2, j, 0),
+                        get_position_index(n, 5, j, 0),
+                        get_position_index(n, 4, n - j - 1, n - 1),
                     )
                 )
         if move == "F":
             for j in range(n):
                 permutation.append(
                     (  # 2 : Front face - 0, 3, 5, 1
-                        get_position_index(0, n - 1, j),
-                        get_position_index(3, j, 0),
-                        get_position_index(5, 0, n - j - 1),
-                        get_position_index(1, n - j - 1, n - 1),
+                        get_position_index(n, 0, n - 1, j),
+                        get_position_index(n, 3, j, 0),
+                        get_position_index(n, 5, 0, n - j - 1),
+                        get_position_index(n, 1, n - j - 1, n - 1),
                     )
                 )
 
@@ -253,10 +240,10 @@ def generate_lateral_moves():
             for j in range(n):
                 permutation.append(
                     (  # 3 : Right face - 5, 2, 0, 4
-                        get_position_index(5, j, n - 1),
-                        get_position_index(2, j, n - 1),
-                        get_position_index(0, j, n - 1),
-                        get_position_index(4, n - j - 1, 0),
+                        get_position_index(n, 5, j, n - 1),
+                        get_position_index(n, 2, j, n - 1),
+                        get_position_index(n, 0, j, n - 1),
+                        get_position_index(n, 4, n - j - 1, 0),
                     )
                 )
 
@@ -264,10 +251,10 @@ def generate_lateral_moves():
             for j in range(n):
                 permutation.append(
                     (  # 4 : Back face - 0, 1, 5, 3
-                        get_position_index(0, 0, n - j - 1),
-                        get_position_index(1, j, 0),
-                        get_position_index(5, n - 1, j),
-                        get_position_index(3, n - j - 1, n - 1),
+                        get_position_index(n, 0, 0, n - j - 1),
+                        get_position_index(n, 1, j, 0),
+                        get_position_index(n, 5, n - 1, j),
+                        get_position_index(n, 3, n - j - 1, n - 1),
                     )
                 )
 
@@ -275,16 +262,32 @@ def generate_lateral_moves():
             for j in range(n):
                 permutation.append(
                     (  # 5 : Down face - 1, 2, 3, 4
-                        get_position_index(1, n - 1, j),
-                        get_position_index(2, n - 1, j),
-                        get_position_index(3, n - 1, j),
-                        get_position_index(4, n - 1, j),
+                        get_position_index(n, 1, n - 1, j),
+                        get_position_index(n, 2, n - 1, j),
+                        get_position_index(n, 3, n - 1, j),
+                        get_position_index(n, 4, n - 1, j),
                     )
                 )
 
         permutations[move] = permutation
 
     return permutations
+
+
+def generate_double_moves(perms: dict):
+    permutation = {}
+    for move in moves:
+        permutation[f"{move}2"] = perms[move] * 2
+
+    return permutation
+
+
+def invert_moves(moves):
+    inverted_moves = list(
+        map(lambda x: x.replace("'", "") if "'" in x else f"{x}'", reversed(moves))
+    )
+
+    return inverted_moves
 
 
 def generate_inverse_moves(moves_dict):
@@ -318,27 +321,97 @@ def final_position(pos):
     )  # we check if the number of color changes corresponds to the number of colors
 
 
-if __name__ == "__main__":
-    cube = Cube(3)
-    # scramble = cube.scramble(5)
-    #
-    # print(scramble)
-    cube.permute(["U'", "L", "1M'", "L", "B"])
+def define_permutation(moves: list[tuple[int, ...]]):
+    """
+    Simplify the permutation associated to a list of basic permutations
+    :param moves: list of permutation
 
-    # cube.permute(["1S"])
-    # cube.permute(["1E'"])
+    use: define_permutation([perms[move] for move in moves])
+            where:  perms is the dict of moves -> permutation
+                    moves is the list of movements (U, F, D, R, L, B)
+    """
+    fake_cube = [i for i in range(54)]
+    apply_permutation(fake_cube, moves)
 
-    # print(cube.permute("1M"))
-    # print(cube.permute("1M"))
-    # print(cube.permute("1E"))
-    # print(cube.permute("1E"))
-    # print(cube.permute("1S"))
-    # print(cube.permute("1S"))
+    return fake_cube
 
 
-def invert_moves(moves):
-    inverted_moves = list(
-        map(lambda x: x.replace("'", "") if "'" in x else f"{x}'", reversed(moves))
-    )
+def simplify_list_of_perms(perms: list[str]):
+    """
+    Method to simplify a list of moves
 
-    return inverted_moves
+    :param perms: list of sequential move to perform
+    :return: simplified list of move to do the same thing
+
+    example :
+        - previous : ['B', "B'", 'B', "D'", 'B', 'D', 'B', "B'", 'N', "D'", "F'", 'L', "R'", "D'", 'N', 'L', "F'", 'U', 'N', 'D', "F'", 'F', 'D', "D'", 'N', "L'", 'N', 'D', 'N', "D'"]
+        - becomes : ['B', "D'", 'B', "F'", 'L', "R'", "D'", 'L', "F'", 'U', 'D', "L'"]
+    """
+    new_perms = []
+
+    for perm in perms:
+        print(perm)
+        if perm == "N":
+            continue
+
+        if new_perms:
+            top = new_perms[-1]
+            print("top :", top)
+
+            if top == perm + "'" or perm == top + "'":
+                new_perms.pop()
+                continue
+
+        new_perms.append(perm)
+
+    return new_perms
+
+
+def permute_from_defined_permutation(cube: Cube, indexed_cube: list[int]):
+    model = []
+    for index in indexed_cube:
+        model.append(cube.cube[index])
+
+    return np.array(model)
+
+
+def apply_permutation(num: list[int], perm: list[tuple[int, ...]]):
+    save = list(num)
+    for t in perm:
+        u = (t[-1],) + t
+        for i, v in enumerate(t):
+            num[v] = save[u[i]]
+
+
+def face_is_complete(face: int, cube: Cube):
+    colors = cube.get_face_colors(face)
+    for color in colors:
+        if color != colors[0]:
+            return False
+
+    return True
+
+
+def verify_corner(corner: int, cube: Cube):
+    return [resolved_cube[facet] for facet in corners[corner]] == [cube.cube[facet] for facet in corners[corner]]
+
+
+def verify_edge(edge: int, cube: Cube):
+    return [resolved_cube[facet] for facet in edges[edge]] == [cube.cube[facet] for facet in edges[edge]]
+
+
+def compute_distance_to_position(piece: int, cube: Cube):
+    # TODO: implement (need to differentiate corners and edges, either two function or parameter)
+    pass
+
+# TODO: implement breadth first to compute the lowest possible number of moves to put the piece at the right position
+#  using basic moves from perm dictionary of the cube
+
+
+if __name__ == '__main__':
+    test = ['B', "B'", 'B', "D'", 'B', 'D', 'B', "B'", 'N', "D'", "F'", 'L', "R'", "D'", 'N', 'L', "F'", 'U', 'N', 'D', "F'", 'F', 'D', "D'", 'N', "L'", 'N', 'D', 'N', "D'"]
+    res = simplify_list_of_perms(test)
+    print(res)
+
+    print(Cube(2).permute(test))
+    print(Cube(2).permute(res))

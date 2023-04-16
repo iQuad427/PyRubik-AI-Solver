@@ -28,14 +28,16 @@ class IterativeDeepeningSearchEngine(GenericGameEngine):
     def run(self):
 
         for depth in range(self.max_depth):
+            print("depth of search:", depth)
             engine = DepthFirstSearchEngine(self.state, self.evaluation_function, depth)
             solution = engine.run()
 
-            if engine.best_score < self.best_score:
-                self.best_found = solution
-                self.best_score = engine.best_score
+            # if engine.best_score < self.best_score:
+            #     self.best_found = solution
+            #     self.best_score = engine.best_score
 
-            if solution:
-                return solution
+            if solution is not None:
+                if self.evaluation_function(solution) == 0:
+                    return solution
 
         return None
