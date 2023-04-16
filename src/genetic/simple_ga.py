@@ -34,8 +34,9 @@ class GeneticAlgorithm:
             print(f"Generation {generation_count}")
             mate_pool = []
             current_generation = copy.deepcopy(generation)
-            # generation = current_generation[5:95]
-            # generation.extend(current_generation[40:50])
+            generation = current_generation[0:55]
+            for i in range(100 - len(generation)):
+                 generation.append(self.mutate(generation[i]))
             evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
                          current_generation]
             print(evaluated)
@@ -44,22 +45,23 @@ class GeneticAlgorithm:
             print(evaluated)
             # Selection
             generation = self.selection(generation)
-            mate_pool.extend(self.crossover(generation))
+            top_generation = self.select_best(current_generation, int(len(current_generation)/10))
+            mate_pool.extend(top_generation)
 
-            for individual in generation:
+            crossed = self.crossover(generation)
+            mate_pool.extend(crossed)
+            for i in range(len(mate_pool)):
                 if random.random() < self.mutation_rate:
-                    individual = self.mutate(individual)
-                    mutated = self.mutate(individual)
-                    if self.evaluate(individual) != self.evaluate(mutated):
-                        mate_pool.append(mutated)
-            mate_pool.extend(self.select_best(current_generation, int(len(current_generation) / 10)))
-            # print(mate_pool)
-
+                    mate_pool[i] = self.mutate(mate_pool[i])
             generation = self.select_best(mate_pool, len(generation))
             check_duplicates_generation = []
             for i in generation:
                 if i not in check_duplicates_generation:
                     check_duplicates_generation.append(i)
+            for i in range(100 - len(check_duplicates_generation)):
+                check_duplicates_generation.append(self.mutate(generation[0]))
+            generation = check_duplicates_generation
+
             print("generation size: ", len(generation), "\n#non-duplicates: ", len(check_duplicates_generation))
 
             best_score = self.evaluate(generation[0])
@@ -90,60 +92,38 @@ class GeneticAlgorithm:
             list_evaluated_generation.append((evaluated[i], generation[i]))
 
         list_evaluated_generation.sort()
-
-        try:
-            for i in list_evaluated_generation[:trunc_value]:
-                new_generation.append(i[1])
-        except:
-            print("trunc_value is too high")
+        for i in list_evaluated_generation[:trunc_value]:
+            new_generation.append(i[1])
         return new_generation
 
-    def select_worst(self, generation, trunc_value):
-        new_generation = []
-        # Evaluate each individual
-        evaluated = [self.evaluate(individual) for individual in generation]
-        list_evaluated_generation = []
-        # Sorting based on evaluation
-        for i in range(len(generation)):
-            list_evaluated_generation.append((evaluated[i], generation[i]))
-
-        list_evaluated_generation.sort(reverse=True)
-
-        try:
-            for i in list_evaluated_generation[:trunc_value]:
-                new_generation.append(i[1])
-        except:
-            print("trunc_value is too high")
-        return new_generation
 
     def mutate(self, individual):
-        index = random.randint(0, len(individual) - 1)
+        for i in range(2):
+            index = random.randint(0, len(individual) - 1)
 
-        possibilities = [*self.cube.perms.keys()]
-        for i in range(5):
-            possibilities.append("N")
-        gene_value = individual[index]
-        possibilities.remove(gene_value)
-        try:
-            possibilities.remove(invert_moves([gene_value])[0])
-        except ValueError:
-            pass
-        if index > 0:
+            possibilities = [*self.cube.perms.keys()]
+            gene_value = individual[index]
+            possibilities.remove(gene_value)
             try:
-                possibilities.remove(individual[index - 1])
+                possibilities.remove(invert_moves([gene_value])[0])
             except ValueError:
                 pass
-        if index < len(individual) - 1:
-            try:
-                possibilities.remove(individual[index + 1])
-            except ValueError:
-                pass
-        mutated = individual.copy()
-        random_choice = random.choice(possibilities)
-        mutated[index] = random_choice
+            if index > 0:
+                try:
+                    possibilities.remove(individual[index - 1])
+                except ValueError:
+                    pass
+            if index < len(individual) - 1:
+                try:
+                    possibilities.remove(individual[index + 1])
+                except ValueError:
+                    pass
+            mutated = individual.copy()
+            random_choice = random.choice(possibilities)
+            mutated[index] = random_choice
 
-        # if self.evaluate(individual) > self.evaluate(mutated):
-        #     individual[index] = random_choice
+            # if self.evaluate(individual) > self.evaluate(mutated):
+            #     individual[index] = random_choice
 
         return mutated
 
@@ -204,10 +184,16 @@ class GeneticAlgorithm:
         for i in range(0, len(selected_individuals), 2):
             new_generation.extend(
                 self.crossover_individuals(
-                    selected_individuals[i], selected_individuals[i + 1]
+                    selected_individuals[i], selected_individuals[random.randint(0,99)]
                 )
             )
-
+        # i = 0
+        # while len(new_generation) <= 100 :
+        #     children = self.crossover_individuals(selected_individuals[i], selected_individuals[random.randint(0,99)])
+        #     if children[0] != selected_individuals[0]:
+        #         new_generation.append(children[0])
+        #     if children[1] != selected_individuals[1]:
+        #         new_generation.append(children[1])
         return new_generation
 
     def crossover_individuals(self, individual1, individual2):
@@ -256,13 +242,13 @@ class GeneticAlgorithm:
 
 
 if __name__ == "__main__":
-    cube = Cube(2)
-    print(cube.scramble(20))
+    cube = Cube(3)
+    print(cube.scramble(15))
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'"])
     GeneticAlgorithm(
-        1000, 200, 100, 0.5, cube, distance_to_good_face_evaluation_function
+        100, 100000, 25, 0.05, cube, face_color_membership_evaluation_function
     ).run()
 
     print(cube)

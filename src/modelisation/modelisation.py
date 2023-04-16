@@ -85,7 +85,7 @@ class Cube:
 
         return shuffle
 
-    def permute(self, perms: list[str]):
+    def permute(self, perms: List[str]):
         """
         Apply a permutation to the current cube state
 
