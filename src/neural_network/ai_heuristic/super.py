@@ -21,7 +21,6 @@ def create_model() -> keras.Model:
     inputs = keras.Input(shape=(NUMBER_OF_INPUTS,))
     x = keras.layers.Dense(6, activation="sigmoid")(inputs)
     outputs = keras.layers.Dense(1, activation="linear")(x)
-
     model = keras.Model(inputs=inputs, outputs=outputs)
     model.compile(
         optimizer=keras.optimizers.Adam(learning_rate=0.0001),
@@ -97,3 +96,31 @@ def deep_learning_evaluate_function(state: GameState) -> float:
     Evaluation function based on a deep learning model.
     """
     return evaluate_cube(state.cube)
+
+
+if __name__ == "__main__":
+    results = []
+
+    for i in range(50):
+        cube = Cube(3)
+        a = []
+        for _ in range(30):
+            cube.scramble(1)
+            a.append(evaluate_cube(cube))
+
+        results.append(a)
+
+    # Plot median and mean lines
+    plt.plot(np.mean(results, axis=0), label="Mean")
+    plt.plot(np.median(results, axis=0), label="Median")
+    # Plot confidence interval
+    plt.fill_between(
+        range(len(results[0])),
+        np.quantile(results, 0.25, axis=0),
+        np.quantile(results, 0.75, axis=0),
+        alpha=0.5,
+        label="Confidence interval",
+    )
+
+    plt.legend()
+    plt.show()
