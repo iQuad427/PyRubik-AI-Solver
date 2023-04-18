@@ -1,105 +1,81 @@
-import json
-from collections import defaultdict
+import math
+import random
+
+import matplotlib.pyplot as plt
 
 from src.modelisation.modelisation import Cube
-from src.search.evaluation.CFOP.cross import white_cross_evaluation
-from src.search.evaluation.distance import distance_to_good_face_evaluation_function
-from src.search.evaluation.entropy import entropy_based_score_evaluation_function, \
-    translated_entropy_based_score_evaluation_function
-from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_3x3, \
-    simple_distances_total_independent_moves_2x2, simple_distances_total_independent_moves_all_3x3
+from src.neural_network.ai_heuristic.super import deep_learning_evaluate_function
+from src.search.evaluation.look_up.functions.distances import (
+    simple_distances_total_independent_moves_all_3x3,
+)
 from src.search.evaluation.membership import face_color_membership_evaluation_function
-from src.search.informed.a_star import AStarSearchEngine
-from src.search.informed.step_by_step_a_star import AStarStepByStep
 from src.search.models.game_state import GameState
-from src.search.stochastic.iterative import IteratedLocalSearch
-from src.search.uninformed.breadth import BreadthFirstSearchEngine
-from src.search.uninformed.iterative_depth import IterativeDeepeningSearchEngine
+from src.search.uninformed.depth import DepthFirstSearchEngine
+
+# Define the number of cubes to solve
+NUM_CUBES = 20
+# Define the maximum depth for the search
+MAX_DEPTH = 4
+
+MAX_SCRAMBLES = 20
 
 
-def time_function(function, *args, **kwargs):
-    import time
+# Initialize variables to keep track of the number of solved cubes
+num_solved = [0] * (MAX_SCRAMBLES - 4)
+num_trials = [0] * (MAX_SCRAMBLES - 4)
 
-    start = time.time()
-    result = function(*args, **kwargs).run()
-    print(result)
-    if not result:
-        return -1
-
-    end = time.time()
-    return end - start
-
-
-if __name__ == "2__main__":
+for i in range(NUM_CUBES):
+    # Initialize the Rubik's Cube and scramble it between 5 and 15 moves
     cube = Cube(3)
-    cube.scramble(20)
+    num_scrambles = random.randint(5, MAX_SCRAMBLES)
+    num_trials[num_scrambles - 5] += 1
+    cube.scramble(num_scrambles)
 
-    print(cube)
+    # Initialize the search engine
+    eval_func_rotations = [
+        deep_learning_evaluate_function,
+    ]
+    x = 0
+    previous_best_score = math.inf
+    depth = 2
 
-    def combined_evaluation_function(state: GameState):
-        return (
-            distance_to_good_face_evaluation_function(state)
-            + 0.3 * entropy_based_score_evaluation_function(state)
-            + 0.3 * face_color_membership_evaluation_function(state)
-        )
-
-    print(combined_evaluation_function(GameState(cube)))
-
-    result = AStarStepByStep(GameState(cube), combined_evaluation_function, 100)
-
-    result.run()
-    print(combined_evaluation_function(result.state))
-    print(result.state.cube)
-
-
-# if __name__ == "__main__":
-#
-#     engines = [
-#         # IteratedLocalSearch,
-#         # FirstImprovement,
-#         # BestImprovement,
-#         # AStarSearchEngine,
-#         IterativeDeepeningSearchEngine,
-#         # DepthFirstSearchEngine,
-#         # IterativeDeepeningAStarSearchEngine,
-#         # AStarStepByStep,
-#         # BreadthFirstSearchEngine,
-#     ]
-#
-#     data = defaultdict(list)
-#
-#     for engine in engines:
-#         for i in range(1, 10):
-#             total_for_this_config = 0
-#             for _ in range(1):
-#                 cube = Cube(3)
-#                 cube.scramble(i)
-#                 time = time_function(
-#                     engine,
-#                     GameState(cube),
-#                     simple_distances_total_independent_moves_all_3x3,
-#                     max_depth=7,
-#                 )
-#                 total_for_this_config += time
-#
-#             data[str(engine)].append(total_for_this_config / 10)
-#             print("=====================================")
-#             print(json.dumps(data, indent=4))
-#
-#     print(data)
-
-if __name__ == '__main__':
-    cube = Cube(3)
-    scramble = cube.scramble(150)
-    print(scramble)
-    print(cube)
-
-    engine = AStarSearchEngine(
-        GameState(cube),
-        simple_distances_total_independent_moves_all_3x3
+    print(
+        "Initial evaluation: " + str(deep_learning_evaluate_function(GameState(cube)))
     )
 
-    solution = engine.run()
+    # Search for a solution
+    while True:
+        eval_func = eval_func_rotations[x % len(eval_func_rotations)]
+        engine = DepthFirstSearchEngine(GameState(cube), eval_func, depth)
+        result = engine.run()
 
-    print(solution)
+        # If a solution is found, update the number of solved cubes for the corresponding scramble level
+        best_score = min(engine.best_scores)
+        if best_score == 1:
+            num_solved[num_scrambles - 5] += 1
+            break
 
+        # Adjust the depth of the search if there is no improvement
+        if previous_best_score == best_score:
+            depth += 1
+            if depth > MAX_DEPTH:
+                break
+        else:
+            depth = 2
+            previous_best_score = best_score
+
+        cube = engine.best_founds[engine.best_scores.index(best_score)].cube
+        x += 1
+
+# Display the number of solved cubes per scramble level in percentage
+plt.bar(
+    [i for i in range(5, MAX_SCRAMBLES)],
+    [
+        (num_solved[i] / num_trials[i]) * 100 if num_trials[i] else 1
+        for i in range(MAX_SCRAMBLES - 5)
+    ],
+    color="blue",
+)
+plt.xlabel("Number of scrambles")
+plt.ylabel("Percentage of solved cubes")
+plt.show()

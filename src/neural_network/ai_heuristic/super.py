@@ -15,7 +15,7 @@ from src.search.models.game_state import GameState
 
 NUMBER_OF_INPUTS = 6 * 9 * 6
 
-TESTING_SET_SIZE = 1000000
+TESTING_SET_SIZE = 10000
 TEST_RATIO = 0.8
 
 
