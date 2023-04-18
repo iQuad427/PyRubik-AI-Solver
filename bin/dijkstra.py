@@ -40,13 +40,13 @@ def dijkstra_search(model: Cube, max_depth: int):
             hashable = str(next_state.cube)
 
             if hashable not in distances or distances[hashable] > distance:
-                heapq.heappush(heap, (distance + heuristic(GameState(next_state)), next_state.cube, current[2] + [move]))
+                heapq.heappush(heap, ((distance + 1) * heuristic(GameState(next_state)), next_state.cube, current[2] + [move]))
                 distances[hashable] = distance
 
 
 if __name__ == '__main__':
     cube = Cube(3)
-    scramble = cube.scramble(20)
+    scramble = cube.scramble(15)
     print(scramble)
     print(cube)
 
