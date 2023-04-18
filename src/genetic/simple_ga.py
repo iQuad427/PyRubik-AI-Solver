@@ -39,8 +39,8 @@ class GeneticAlgorithm:
             print(f"Generation {generation_count}")
             mate_pool = []
             current_generation = copy.deepcopy(generation)
-            generation = current_generation[0:55]
-            for i in range(100 - len(generation)):
+            generation = current_generation[0:int(self.nb_individuals/2)+1]
+            for i in range(int(self.nb_individuals) - len(generation)):
                  generation.append(self.mutate(generation[i]))
             evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
                          current_generation]
@@ -191,7 +191,7 @@ class GeneticAlgorithm:
         for i in range(0, len(selected_individuals), 2):
             new_generation.extend(
                 self.crossover_individuals(
-                    selected_individuals[i], selected_individuals[random.randint(0,99)]
+                    selected_individuals[i], selected_individuals[random.randint(0,self.nb_individuals-1)]
                 )
             )
         # i = 0
