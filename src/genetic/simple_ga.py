@@ -1,10 +1,15 @@
 import copy
 import random
 
+from src.modelisation.data import resolved_cube_3x3
 from src.modelisation.modelisation import Cube, invert_moves
 from src.search.evaluation.distance import distance_to_good_face_evaluation_function
 from src.search.evaluation.entropy import entropy_based_score_evaluation_function
+from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_2x2, \
+    simple_distances_total_independent_moves_3x3, simple_distances_total_independent_moves_white_cross_3x3, \
+    simple_distances_total_independent_moves_white_face_3x3, simple_distances_total_independent_moves_all_3x3
 from src.search.evaluation.membership import face_color_membership_evaluation_function
+from src.search.models.game_state import GameState
 
 
 class GeneticAlgorithm:
@@ -39,10 +44,11 @@ class GeneticAlgorithm:
                  generation.append(self.mutate(generation[i]))
             evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
                          current_generation]
-            print(evaluated)
+            # print(evaluated)
             evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
                          generation]
-            print(evaluated)
+            # print(evaluated)
+
             # Selection
             generation = self.selection(generation)
             top_generation = self.select_best(current_generation, int(len(current_generation)/10))
@@ -54,15 +60,15 @@ class GeneticAlgorithm:
                 if random.random() < self.mutation_rate:
                     mate_pool[i] = self.mutate(mate_pool[i])
             generation = self.select_best(mate_pool, len(generation))
-            check_duplicates_generation = []
-            for i in generation:
-                if i not in check_duplicates_generation:
-                    check_duplicates_generation.append(i)
-            for i in range(100 - len(check_duplicates_generation)):
-                check_duplicates_generation.append(self.mutate(generation[0]))
-            generation = check_duplicates_generation
-
-            print("generation size: ", len(generation), "\n#non-duplicates: ", len(check_duplicates_generation))
+            # check_duplicates_generation = []
+            # for i in generation:
+            #     if i not in check_duplicates_generation:
+            #         check_duplicates_generation.append(i)
+            # for i in range(100 - len(check_duplicates_generation)):
+            #     check_duplicates_generation.append(self.mutate(generation[0]))
+            # generation = check_duplicates_generation
+            #
+            # print("generation size: ", len(generation), "\n#non-duplicates: ", len(check_duplicates_generation))
 
             best_score = self.evaluate(generation[0])
             best_ind = generation[0]
@@ -75,6 +81,7 @@ class GeneticAlgorithm:
 
             print(f"best : {best_score}")
             print(best_ind)
+            print(cube.permute(best_ind))
 
             if best_score == 0:
                 break
@@ -242,13 +249,13 @@ class GeneticAlgorithm:
 
 
 if __name__ == "__main__":
-    cube = Cube(3)
-    print(cube.scramble(15))
-    # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
-    # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B'])
-    # cube = cube.permute(["R'", 'D', "F'", 'U', "L'"])
+    cube = Cube(2)
+    scramble = cube.scramble(30)
+    print(scramble)
+
     GeneticAlgorithm(
-        100, 100000, 25, 0.05, cube, face_color_membership_evaluation_function
+        1000, 200, 25, 0.3, cube, simple_distances_total_independent_moves_2x2
     ).run()
 
+    print(scramble)
     print(cube)

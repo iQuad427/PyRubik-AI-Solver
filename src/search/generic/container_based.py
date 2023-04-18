@@ -38,6 +38,8 @@ class ContainerBasedGameEngine(GenericGameEngine):
             state = self.get_next_state(container)
             score = self.evaluation_function(state)
 
+            print(self.best_scores)
+
             if score == 0:
                 print(score)
                 print(state.cube)

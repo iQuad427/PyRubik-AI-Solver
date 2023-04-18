@@ -16,13 +16,7 @@ def create_empty_cube(size: int):
     return Cube(size, inner=np.array(model))
 
 
-def set_corner(model: Cube, facets: list[int], colors: list[str], parity=0):
-    if parity:
-        model.cube[facets[0]] = colors[0]
-        model.cube[facets[1]] = colors[2]
-        model.cube[facets[2]] = colors[1]
-        return
-
+def set_corner(model: Cube, facets: list[int], colors: list[str]):
     for i, facet in enumerate(facets):
         model.cube[facet] = colors[i]
 
@@ -78,15 +72,21 @@ def look_up_table_corners():
         for piece in range(8):  # we try all possible corner piece
             print("piece being processed :", piece)
             for orientation in range(3):  # in all three possible orientations
-                for x in range(2):
+                for parity in range(2):
+
                     cube = create_empty_cube(2)
                     facets = orient(corners_2x2[piece], orientation)
 
-                    cuby = [resolved_cube[facet] for facet in facets]
-                    set_corner(cube, corners_2x2[position], cuby, parity=x)
+                    if parity:
+                        cuby = [resolved_cube[facet] for facet in facets]
+                    else:
+                        cuby = [resolved_cube[facets[0]], resolved_cube[facets[2]], resolved_cube[facets[1]]]
+
+                    set_corner(cube, corners_2x2[position], cuby)
 
                     result = depth_search(cube, piece, 4, "corner")
                     if result is not None:
+                        print(str((position, tuple(cuby))), "->", str(result[2]))
                         distances[(position, tuple(cuby))] = result[2]
 
     return distances
@@ -108,11 +108,12 @@ def look_up_table_edges():
 
                 result = depth_search(cube, piece, 4, "edge")
                 if result is not None:
+                    print(str((position, tuple(cuby))), "->", str(result[2]))
                     distances[(position, tuple(cuby))] = result[2]
 
     return distances
 
 
 if __name__ == '__main__':
-    # print(look_up_table_corners())
-    print(look_up_table_edges())
+    print(look_up_table_corners())
+    # print(look_up_table_edges())
