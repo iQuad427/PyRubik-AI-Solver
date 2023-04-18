@@ -2,7 +2,8 @@ import random
 from typing import List
 import numpy as np
 
-from src.modelisation.data import colors, n, moves, edges, COLORS, corners_3x3, resolved_cube_3x3
+from src.modelisation.data import colors, n, moves, edges, COLORS, corners_3x3, resolved_cube_3x3, cube_moves_2, \
+    cube_moves_3
 
 
 class Cube:
@@ -14,11 +15,10 @@ class Cube:
         else:
             self.cube = self._generate_cube()
 
-        self.perms = generate_lateral_moves(self.n)
-        self.perms.update(generate_crown_moves(self.n))
-        # self.perms.update(generate_double_moves(self.perms))
-        self.perms.update(generate_inverse_moves(self.perms))
-        self.perms["N"] = None
+        if self.n == 2:
+            self.perms = cube_moves_2
+        else:
+            self.perms = cube_moves_3
 
     def __bool__(self):
         return final_position(self.cube)
@@ -81,6 +81,12 @@ class Cube:
 
     def scramble(self, times: int):
         shuffle = random.choices(list(self.perms.keys()), k=times)
+        shuffle = simplify_list_of_perms(shuffle)
+
+        while len(shuffle) != times:
+            shuffle += [*random.choices(list(self.perms.keys()), k=(times - len(shuffle)))]
+            shuffle = simplify_list_of_perms(shuffle)
+
         self._permute(self.cube, shuffle)
 
         return shuffle
@@ -350,13 +356,11 @@ def simplify_list_of_perms(perms: list[str]):
     new_perms = []
 
     for perm in perms:
-        print(perm)
         if perm == "N":
             continue
 
         if new_perms:
             top = new_perms[-1]
-            print("top :", top)
 
             if top == perm + "'" or perm == top + "'":
                 new_perms.pop()
@@ -412,6 +416,9 @@ if __name__ == '__main__':
     test = ['N', 'R', 'R', 'D', "D'", 'B', 'R', 'D', "R'", 'D', 'U', 'D', 'L', 'D', 'N', "L'", 'U', 'D', 'N', "D'", "L'", 'L', 'D', "R'", 'N', 'U', 'D', "D'", "B'", 'U']
     res = simplify_list_of_perms(test)
     print(res)
+
+    print(Cube(2).perms)
+    print(Cube(3).perms)
 
     print(Cube(2).permute(test))
     print(Cube(2).permute(res))
