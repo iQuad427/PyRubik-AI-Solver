@@ -1,71 +1,105 @@
-import math
-import random
+import json
+from collections import defaultdict
 
 from src.modelisation.modelisation import Cube
-from src.neural_network.ai_heuristic.super import (
-    deep_learning_evaluate_function,
-    evaluate_cube,
-)
+from src.search.evaluation.CFOP.cross import white_cross_evaluation
+from src.search.evaluation.distance import distance_to_good_face_evaluation_function
+from src.search.evaluation.entropy import entropy_based_score_evaluation_function, \
+    translated_entropy_based_score_evaluation_function
+from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_3x3, \
+    simple_distances_total_independent_moves_2x2, simple_distances_total_independent_moves_all_3x3
 from src.search.evaluation.membership import face_color_membership_evaluation_function
+from src.search.informed.a_star import AStarSearchEngine
+from src.search.informed.step_by_step_a_star import AStarStepByStep
 from src.search.models.game_state import GameState
-from src.search.uninformed.depth import DepthFirstSearchEngine
+from src.search.stochastic.iterative import IteratedLocalSearch
+from src.search.uninformed.breadth import BreadthFirstSearchEngine
+from src.search.uninformed.iterative_depth import IterativeDeepeningSearchEngine
 
-if __name__ == "__main__":
+
+def time_function(function, *args, **kwargs):
+    import time
+
+    start = time.time()
+    result = function(*args, **kwargs).run()
+    print(result)
+    if not result:
+        return -1
+
+    end = time.time()
+    return end - start
+
+
+if __name__ == "2__main__":
     cube = Cube(3)
-    cube.scramble(15)
+    cube.scramble(20)
+
     print(cube)
-    print("Normal eval", face_color_membership_evaluation_function(GameState(cube)))
 
-    # cleanup cube with
-
-    eval_func_rotations = [
-        deep_learning_evaluate_function,
-        deep_learning_evaluate_function,
-        deep_learning_evaluate_function,
-        deep_learning_evaluate_function,
-    ]
-
-    depth_rotation = [3, 3, 3, 3]
-
-    x = 0
-
-    previous_best_score = math.inf
-
-    previous_best = set()
-
-    while True:
-        eval_func = eval_func_rotations[x % len(eval_func_rotations)]
-        engine = DepthFirstSearchEngine(
-            GameState(cube), eval_func, depth_rotation[x % len(depth_rotation)]
+    def combined_evaluation_function(state: GameState):
+        return (
+            distance_to_good_face_evaluation_function(state)
+            + 0.3 * entropy_based_score_evaluation_function(state)
+            + 0.3 * face_color_membership_evaluation_function(state)
         )
-        result = engine.run()
 
-        best_found_score_excluding_previous = [
-            found for found in engine.best_scores if found not in previous_best
-        ]
+    print(combined_evaluation_function(GameState(cube)))
 
-        if not best_found_score_excluding_previous:
-            print("No new best found")
-            break
+    result = AStarStepByStep(GameState(cube), combined_evaluation_function, 100)
 
-        if len(previous_best) > 10:
-            print("Clearing previous best")
-            previous_best = set()
+    result.run()
+    print(combined_evaluation_function(result.state))
+    print(result.state.cube)
 
 
-        best_score = min(best_found_score_excluding_previous)
-        best_found = engine.best_founds[engine.best_scores.index(best_score)]
+# if __name__ == "__main__":
+#
+#     engines = [
+#         # IteratedLocalSearch,
+#         # FirstImprovement,
+#         # BestImprovement,
+#         # AStarSearchEngine,
+#         IterativeDeepeningSearchEngine,
+#         # DepthFirstSearchEngine,
+#         # IterativeDeepeningAStarSearchEngine,
+#         # AStarStepByStep,
+#         # BreadthFirstSearchEngine,
+#     ]
+#
+#     data = defaultdict(list)
+#
+#     for engine in engines:
+#         for i in range(1, 10):
+#             total_for_this_config = 0
+#             for _ in range(1):
+#                 cube = Cube(3)
+#                 cube.scramble(i)
+#                 time = time_function(
+#                     engine,
+#                     GameState(cube),
+#                     simple_distances_total_independent_moves_all_3x3,
+#                     max_depth=7,
+#                 )
+#                 total_for_this_config += time
+#
+#             data[str(engine)].append(total_for_this_config / 10)
+#             print("=====================================")
+#             print(json.dumps(data, indent=4))
+#
+#     print(data)
 
-        previous_best.add(best_score)
+if __name__ == '__main__':
+    cube = Cube(3)
+    scramble = cube.scramble(150)
+    print(scramble)
+    print(cube)
 
-        print("New best score:", best_score)
-        print("New best found:", best_found.cube)
+    engine = AStarSearchEngine(
+        GameState(cube),
+        simple_distances_total_independent_moves_all_3x3
+    )
 
-        print(best_score)
+    solution = engine.run()
 
-        if best_score == 1:
-            print(cube)
-            print("Solved!")
-            break
-        cube = best_found.cube
-        x += 1
+    print(solution)
+
