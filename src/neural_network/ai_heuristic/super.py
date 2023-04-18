@@ -1,34 +1,22 @@
 import os
+import random
+from functools import lru_cache
+from typing import Tuple
+
+from sklearn.pipeline import make_pipeline
 
 # Plot the line for each cube
 import matplotlib.pyplot as plt
-
-import random
-
 import numpy as np
-from tensorflow import keras
+from xgboost import XGBRegressor
 
 from src.modelisation.modelisation import Cube
 from src.search.models.game_state import GameState
 
 NUMBER_OF_INPUTS = 6 * 9 * 6
 
-TESTING_SET_SIZE = 10000
+TESTING_SET_SIZE = 1000000
 TEST_RATIO = 0.8
-
-
-def create_model() -> keras.Model:
-    inputs = keras.Input(shape=(NUMBER_OF_INPUTS,))
-    x = keras.layers.Dense(6, activation="sigmoid")(inputs)
-    outputs = keras.layers.Dense(1, activation="linear")(x)
-    model = keras.Model(inputs=inputs, outputs=outputs)
-    model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=0.0001),
-        loss=keras.losses.MeanSquaredError(),
-        metrics=["mse"],
-    )
-
-    return model
 
 
 def get_cube_data_input(cube: Cube):
@@ -47,58 +35,80 @@ def get_trained_model(path: str):
     number_of_trainings = int(TESTING_SET_SIZE * TEST_RATIO)
     trainings_inputs = []
     trainings_outputs = []
-    model = create_model()
-    model.summary()
     for i in range(TESTING_SET_SIZE):
         cube = Cube(3)
-        scramble_level = random.randint(0, 20)
+        max_level = 20
+        scramble_level = random.randint(0, max_level)
         cube.scramble(scramble_level)
         cube_data = get_cube_data_input(cube)
         trainings_inputs.append(cube_data)
-        trainings_outputs.append(scramble_level)
+        trainings_outputs.append(scramble_level / max_level)
     print("Finished creating training data")
     print("Training...")
+
+    # Create TruncatedSVD and XGBoostClassifier pipeline
+    model = make_pipeline(
+        XGBRegressor(
+            booster="gbtree",
+            colsample_bytree=0.8,
+            eta=0.3,
+            gamma=0,
+            max_depth=10,
+            max_leaves=511,
+            n_estimators=50,
+            objective="reg:logistic",
+            reg_alpha=0.8333333333333334,
+            reg_lambda=1.9791666666666667,
+            subsample=1,
+            tree_method="auto",
+            n_jobs=-1,
+        )
+    )
+
     model.fit(
-        trainings_inputs[:number_of_trainings],
-        trainings_outputs[:number_of_trainings],
-        epochs=1000,
-        workers=16,
+        trainings_inputs[:number_of_trainings], trainings_outputs[:number_of_trainings]
     )
+
     print("Testing...")
-    test_loss, test_acc = model.evaluate(
-        trainings_inputs[number_of_trainings:],
-        trainings_outputs[number_of_trainings:],
-        verbose=2,
+    test_loss = model.score(
+        trainings_inputs[number_of_trainings:], trainings_outputs[number_of_trainings:]
     )
-    print("Test accuracy:", test_acc)
     print("Test loss:", test_loss)
 
     # save model
-    model.save(path)
-    return model
+    model.named_steps["xgbregressor"].save_model(path)
+    return model.named_steps["xgbregressor"]
+
+
+model_path = r"C:\Users\gaspa\Documents\Dev\ULB\pyrubik\src\neural_network\ai_heuristic\model.json"
+
+if not os.path.isfile(model_path):
+    model = get_trained_model(model_path)
+else:
+    model = XGBRegressor()
+    model.load_model(model_path)
+
+
+@lru_cache(maxsize=10000)
+def inner_evaluate_cube(data: Tuple):
+    cube_data = np.array(data).reshape(1, -1)
+    # dimensionality reduction using TruncatedSVDWrapper
+    return model.predict(cube_data)[0]
 
 
 def evaluate_cube(cube: Cube):
-    model_path = r"C:\Users\gaspa\Documents\Dev\ULB\pyrubik\src\neural_network\ai_heuristic\model.h5"
-
-    if not os.path.isfile(model_path):
-        model = get_trained_model(model_path)
-    else:
-        model = keras.models.load_model(model_path)
-
-    cube_data = get_cube_data_input(cube)
-
-    return model.predict(np.array([cube_data]))[0][0]
+    return inner_evaluate_cube(tuple(get_cube_data_input(cube)))
 
 
-def deep_learning_evaluate_function(state: GameState) -> float:
+def deep_learning_evaluate_function(state: GameState) -> int:
     """
     Evaluation function based on a deep learning model.
     """
-    return evaluate_cube(state.cube)
+    return int(evaluate_cube(state.cube) * 100) ** 2
 
 
 if __name__ == "__main__":
+
     results = []
 
     for i in range(50):

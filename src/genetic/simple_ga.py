@@ -2,6 +2,10 @@ import copy
 import random
 
 from src.modelisation.modelisation import Cube, invert_moves
+from src.neural_network.ai_heuristic.super import (
+    deep_learning_evaluate_function,
+    evaluate_cube,
+)
 from src.search.evaluation.distance import distance_to_good_face_evaluation_function
 from src.search.evaluation.entropy import entropy_based_score_evaluation_function
 from src.search.evaluation.membership import face_color_membership_evaluation_function
@@ -9,13 +13,13 @@ from src.search.evaluation.membership import face_color_membership_evaluation_fu
 
 class GeneticAlgorithm:
     def __init__(
-            self,
-            nb_individuals,
-            nb_generations,
-            length_individual,
-            mutation_rate,
-            cube: Cube,
-            evaluation_function,
+        self,
+        nb_individuals,
+        nb_generations,
+        length_individual,
+        mutation_rate,
+        cube: Cube,
+        evaluation_function,
     ):
         self.nb_individuals = nb_individuals
         self.nb_generations = nb_generations
@@ -36,16 +40,22 @@ class GeneticAlgorithm:
             current_generation = copy.deepcopy(generation)
             generation = current_generation[0:55]
             for i in range(100 - len(generation)):
-                 generation.append(self.mutate(generation[i]))
-            evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
-                         current_generation]
+                generation.append(self.mutate(generation[i]))
+            evaluated = [
+                self.evaluate(individual) if self.evaluate(individual) != 0 else 100
+                for individual in current_generation
+            ]
             print(evaluated)
-            evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
-                         generation]
+            evaluated = [
+                self.evaluate(individual) if self.evaluate(individual) != 0 else 100
+                for individual in generation
+            ]
             print(evaluated)
             # Selection
             generation = self.selection(generation)
-            top_generation = self.select_best(current_generation, int(len(current_generation)/10))
+            top_generation = self.select_best(
+                current_generation, int(len(current_generation) / 10)
+            )
             mate_pool.extend(top_generation)
 
             crossed = self.crossover(generation)
@@ -53,16 +63,8 @@ class GeneticAlgorithm:
             for i in range(len(mate_pool)):
                 if random.random() < self.mutation_rate:
                     mate_pool[i] = self.mutate(mate_pool[i])
-            generation = self.select_best(mate_pool, len(generation))
-            check_duplicates_generation = []
-            for i in generation:
-                if i not in check_duplicates_generation:
-                    check_duplicates_generation.append(i)
-            for i in range(100 - len(check_duplicates_generation)):
-                check_duplicates_generation.append(self.mutate(generation[0]))
-            generation = check_duplicates_generation
 
-            print("generation size: ", len(generation), "\n#non-duplicates: ", len(check_duplicates_generation))
+            generation = self.select_best(mate_pool, len(generation))
 
             best_score = self.evaluate(generation[0])
             best_ind = generation[0]
@@ -95,7 +97,6 @@ class GeneticAlgorithm:
         for i in list_evaluated_generation[:trunc_value]:
             new_generation.append(i[1])
         return new_generation
-
 
     def mutate(self, individual):
         for i in range(2):
@@ -145,8 +146,10 @@ class GeneticAlgorithm:
     def selection(self, generation):
 
         # Evaluate each individual
-        evaluated = [1 / self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
-                     generation]
+        evaluated = [
+            1 / self.evaluate(individual) if self.evaluate(individual) != 0 else 100
+            for individual in generation
+        ]
 
         return random.choices(generation, weights=evaluated, k=self.nb_individuals)
 
@@ -184,7 +187,7 @@ class GeneticAlgorithm:
         for i in range(0, len(selected_individuals), 2):
             new_generation.extend(
                 self.crossover_individuals(
-                    selected_individuals[i], selected_individuals[random.randint(0,99)]
+                    selected_individuals[i], selected_individuals[random.randint(0, 99)]
                 )
             )
         # i = 0
@@ -247,8 +250,6 @@ if __name__ == "__main__":
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B', 'L'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'", 'D', 'B'])
     # cube = cube.permute(["R'", 'D', "F'", 'U', "L'"])
-    GeneticAlgorithm(
-        100, 100000, 25, 0.05, cube, face_color_membership_evaluation_function
-    ).run()
+    GeneticAlgorithm(1000, 100, 25, 0.3, cube, deep_learning_evaluate_function).run()
 
     print(cube)

@@ -43,10 +43,10 @@ class ContainerBasedGameEngine(GenericGameEngine):
                 print(state.cube)
                 return state
 
-            if len(self.best_scores) < 8:
+            if len(self.best_scores) < 50 and score not in self.best_scores:
                 self.best_founds.append(state)
                 self.best_scores.append(score)
-            elif score < max(self.best_scores):
+            elif score < max(self.best_scores) and score not in self.best_scores:
                 index_to_remove = self.best_scores.index(max(self.best_scores))
                 self.best_founds[index_to_remove] = state
                 self.best_scores[index_to_remove] = score
