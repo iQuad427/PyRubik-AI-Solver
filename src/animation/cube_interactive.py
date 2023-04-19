@@ -6,14 +6,9 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import widgets
 from matplotlib.animation import FuncAnimation
 from multiprocessing import Queue, Process
-
-from matplotlib.backends.backend_template import FigureCanvas
-
 import src.modelisation.modelisation as model
-
 from bin.dijkstra import dijkstra_search
 from projection import Quaternion, project_points
 
@@ -354,6 +349,7 @@ if __name__ == '__main__':
     c = Cube(3)
     figure, axe = c.draw_interactive()
     figure.add_axes(axe)
+    axe.update_cube(scramble, [])
 
     animation = FuncAnimation(figure, CubeAnimation.animate, frames=100)
 
