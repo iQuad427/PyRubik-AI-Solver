@@ -1,13 +1,14 @@
 import heapq
+import multiprocessing
+import time
 from queue import Queue, PriorityQueue
 
-from src.modelisation.modelisation import Cube, final_position, simplify_list_of_perms
-from src.search.evaluation.entropy import translated_entropy_based_score_evaluation_function
+from src.modelisation.modelisation import Cube, final_position
 from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_all_3x3
 from src.search.models.game_state import GameState
 
 
-def dijkstra_search(model: Cube, max_depth: int):
+def dijkstra_search(model: Cube, queue=None):
     heuristic = simple_distances_total_independent_moves_all_3x3
 
     best_score = heuristic(GameState(model))
@@ -26,11 +27,20 @@ def dijkstra_search(model: Cube, max_depth: int):
             print(current[2])
             print(model.permute(current[2]))
 
+            if queue is not None:
+                data = ""
+                for move in current[2]:
+                    data += f" {move}"
+                queue.put(data)
+
         if final_position(current[1]):
             print("Solution Found")
             print("movements count:", distances[str(current[1])])
             print("moves:", current[2])
             print(Cube(3, inner=current[1]))
+
+            queue.put('quit')
+
             return current[2]
 
         for move in model.perms:
@@ -40,17 +50,17 @@ def dijkstra_search(model: Cube, max_depth: int):
             hashable = str(next_state.cube)
 
             if hashable not in distances or distances[hashable] > distance:
-                heapq.heappush(heap, ((distance + 1) * heuristic(GameState(next_state)), next_state.cube, current[2] + [move]))
+                heapq.heappush(heap, ((distance + 1) ** 3 * heuristic(GameState(next_state)), next_state.cube, current[2] + [move]))
                 distances[hashable] = distance
 
 
 if __name__ == '__main__':
     cube = Cube(3)
-    scramble = cube.scramble(15)
+    scramble = cube.scramble(20)
     print(scramble)
     print(cube)
 
-    dijkstra_search(cube, 20)
+    dijkstra_search(cube)
 
     print(scramble)
 
