@@ -22,7 +22,6 @@ class AStarStepByStep(GenericGameEngine):
 
             solutions = []
             solutions_score = []
-            print(i)
 
             for best_found in engine.best_founds:
                 new_engine = DepthFirstSearchEngine(
@@ -45,7 +44,6 @@ class AStarStepByStep(GenericGameEngine):
                     solutions_score.extend(new_engine.best_scores)
 
             best_score = min(solutions_score)
-            print(best_score)
 
             self.state = solutions[solutions_score.index(best_score)]
 

@@ -1,26 +1,21 @@
 import copy
 import random
 
-from src.modelisation.data import resolved_cube_3x3
 from src.modelisation.modelisation import Cube, invert_moves
-from src.search.evaluation.distance import distance_to_good_face_evaluation_function
-from src.search.evaluation.entropy import entropy_based_score_evaluation_function
-from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_2x2, \
-    simple_distances_total_independent_moves_3x3, simple_distances_total_independent_moves_white_cross_3x3, \
-    simple_distances_total_independent_moves_white_face_3x3, simple_distances_total_independent_moves_all_3x3
-from src.search.evaluation.membership import face_color_membership_evaluation_function
-from src.search.models.game_state import GameState
+from src.evaluation.look_up.functions.distances import (
+    simple_distances_total_independent_moves_2x2,
+)
 
 
 class GeneticAlgorithm:
     def __init__(
-            self,
-            nb_individuals,
-            nb_generations,
-            length_individual,
-            mutation_rate,
-            cube: Cube,
-            evaluation_function,
+        self,
+        nb_individuals,
+        nb_generations,
+        length_individual,
+        mutation_rate,
+        cube: Cube,
+        evaluation_function,
     ):
         self.nb_individuals = nb_individuals
         self.nb_generations = nb_generations
@@ -39,19 +34,25 @@ class GeneticAlgorithm:
             print(f"Generation {generation_count}")
             mate_pool = []
             current_generation = copy.deepcopy(generation)
-            generation = current_generation[0:int(self.nb_individuals/2)+1]
+            generation = current_generation[0 : int(self.nb_individuals / 2) + 1]
             for i in range(int(self.nb_individuals) - len(generation)):
-                 generation.append(self.mutate(generation[i]))
-            evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
-                         current_generation]
+                generation.append(self.mutate(generation[i]))
+            evaluated = [
+                self.evaluate(individual) if self.evaluate(individual) != 0 else 100
+                for individual in current_generation
+            ]
             # print(evaluated)
-            evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
-                         generation]
+            evaluated = [
+                self.evaluate(individual) if self.evaluate(individual) != 0 else 100
+                for individual in generation
+            ]
             # print(evaluated)
 
             # Selection
             generation = self.selection(generation)
-            top_generation = self.select_best(current_generation, int(len(current_generation)/10))
+            top_generation = self.select_best(
+                current_generation, int(len(current_generation) / 10)
+            )
             mate_pool.extend(top_generation)
 
             crossed = self.crossover(generation)
@@ -103,7 +104,6 @@ class GeneticAlgorithm:
             new_generation.append(i[1])
         return new_generation
 
-
     def mutate(self, individual):
         for i in range(2):
             index = random.randint(0, len(individual) - 1)
@@ -152,8 +152,10 @@ class GeneticAlgorithm:
     def selection(self, generation):
 
         # Evaluate each individual
-        evaluated = [1 / self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
-                     generation]
+        evaluated = [
+            1 / self.evaluate(individual) if self.evaluate(individual) != 0 else 100
+            for individual in generation
+        ]
 
         return random.choices(generation, weights=evaluated, k=self.nb_individuals)
 
@@ -191,7 +193,8 @@ class GeneticAlgorithm:
         for i in range(0, len(selected_individuals), 2):
             new_generation.extend(
                 self.crossover_individuals(
-                    selected_individuals[i], selected_individuals[random.randint(0,self.nb_individuals-1)]
+                    selected_individuals[i],
+                    selected_individuals[random.randint(0, self.nb_individuals - 1)],
                 )
             )
         # i = 0

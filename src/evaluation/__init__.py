@@ -1,0 +1,9 @@
+from src.evaluation.look_up import LOOK_UP_EVALUATION_FUNCTIONS
+from src.evaluation.ml import ML_EVALUATION_FUNCTIONS
+from src.evaluation.basic import BASIC_EVALUATION_FUNCTIONS
+
+EVALUATION_FUNCTIONS = {
+    **LOOK_UP_EVALUATION_FUNCTIONS,
+    **ML_EVALUATION_FUNCTIONS,
+    **BASIC_EVALUATION_FUNCTIONS,
+}

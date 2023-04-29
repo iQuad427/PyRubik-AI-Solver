@@ -1,8 +1,7 @@
 import math
 
 from src.modelisation.modelisation import Cube
-from src.neural_network.ai_heuristic.super import deep_learning_evaluate_function
-from src.search.evaluation.look_up.functions.distances import (
+from src.evaluation.look_up.functions.distances import (
     simple_distances_total_independent_moves_3x3,
     simple_distances_total_independent_moves_all_3x3,
 )
@@ -74,7 +73,7 @@ def solve_using_deep_and_standard_when_blocked(cube):
     previous_heuristic_score = math.inf
     while True:
         engine = DepthFirstSearchEngine(
-            GameState(cube), deep_learning_evaluate_function, 3
+            GameState(cube), combined_evaluation_function, 3
         )
         engine.run()
 

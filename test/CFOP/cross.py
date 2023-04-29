@@ -1,13 +1,12 @@
 import unittest
 
 from src.modelisation.modelisation import Cube
-from src.search.evaluation.CFOP.cross import white_cross_evaluation
+from src.evaluation.CFOP.cross import white_cross_evaluation
 from src.search.models.game_state import GameState
 from src.search.uninformed.iterative_depth import IterativeDeepeningSearchEngine
 
 
 class TestCross(unittest.TestCase):
-
     def test_level_1(self):
         self.run_experiment_for_scramble(Cube(3).scramble(1))
 
@@ -42,7 +41,7 @@ class TestCross(unittest.TestCase):
         engine = IterativeDeepeningSearchEngine(
             starting_state=GameState(cube),
             evaluation_function=white_cross_evaluation,
-            max_depth=16
+            max_depth=16,
         )
 
         solution = engine.run()
@@ -50,5 +49,5 @@ class TestCross(unittest.TestCase):
         self.assertEqual(white_cross_evaluation(solution), 0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

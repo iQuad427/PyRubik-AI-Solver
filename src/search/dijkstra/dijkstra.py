@@ -2,22 +2,11 @@ import heapq
 import math
 
 from src.modelisation.modelisation import Cube, final_position
-from src.search.evaluation.entropy import entropy_based_score_evaluation_function
-from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_all_3x3, \
-    simple_distances_total_independent_moves_all_2x2
 from src.search.models.game_state import GameState
 
 
-def dijkstra_search(model: Cube, queue=None):
-    if model.n == 2:
-        heuristic = simple_distances_total_independent_moves_all_2x2
-    elif model.n == 3:
-        heuristic = simple_distances_total_independent_moves_all_3x3
-    else:
-        heuristic = entropy_based_score_evaluation_function
-
+def dijkstra_search(model: Cube, queue=None, evaluation_function=None):
     best_score = math.inf
-    print("best:", best_score)
     distances = {str(model.cube): 0}
 
     heap = [(best_score, model.cube, [])]
@@ -25,7 +14,6 @@ def dijkstra_search(model: Cube, queue=None):
 
     while len(heap) != 0:
         current = heapq.heappop(heap)
-        # print(current)
 
         if current[0] < best_score:
             best_score = current[0]
@@ -45,7 +33,7 @@ def dijkstra_search(model: Cube, queue=None):
             print("moves:", current[2])
             print(Cube(model.n, inner=current[1]))
 
-            queue.put('quit')
+            queue.put("quit")
 
             return current[2]
 
@@ -56,11 +44,19 @@ def dijkstra_search(model: Cube, queue=None):
             hashable = str(next_state.cube)
 
             if hashable not in distances or distances[hashable] > distance:
-                heapq.heappush(heap, ((distance + 1) ** 2 * heuristic(GameState(next_state)), next_state.cube, current[2] + [move]))
+                heapq.heappush(
+                    heap,
+                    (
+                        (distance + 1) ** 2
+                        * evaluation_function(GameState(next_state)),
+                        next_state.cube,
+                        current[2] + [move],
+                    ),
+                )
                 distances[hashable] = distance
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     cube = Cube(3)
     scramble = cube.scramble(20)
     print(scramble)
@@ -69,7 +65,3 @@ if __name__ == '__main__':
     dijkstra_search(cube)
 
     print(scramble)
-
-
-
-
