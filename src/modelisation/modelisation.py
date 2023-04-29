@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 from src.modelisation.data import colors, n, moves, edges, COLORS, corners_3x3, resolved_cube_3x3, cube_moves_2, \
-    cube_moves_3
+    cube_moves_3, cube_moves_4
 
 
 class Cube:
@@ -17,8 +17,12 @@ class Cube:
 
         if self.n == 2:
             self.perms = cube_moves_2
-        else:
+        elif self.n == 3:
             self.perms = cube_moves_3
+        elif self.n == 4:
+            self.perms = cube_moves_4
+        else:
+            raise NotImplementedError("This cube size is not supported yet...")
 
     def __bool__(self):
         return final_position(self.cube)
@@ -70,6 +74,9 @@ class Cube:
                     """.format(
                 *[self.cube[i] for i in range(self.n * self.n * 6)]
             )
+        else:
+            print("No flat visualisation implemented")
+            return str(self.cube)
 
     def _generate_cube(self):
         model = []
@@ -402,14 +409,6 @@ def verify_corner(corner: int, cube: Cube):
 
 def verify_edge(edge: int, cube: Cube):
     return [resolved_cube_3x3[facet] for facet in edges[edge]] == [cube.cube[facet] for facet in edges[edge]]
-
-
-def compute_distance_to_position(piece: int, cube: Cube):
-    # TODO: implement (need to differentiate corners and edges, either two function or parameter)
-    pass
-
-# TODO: implement breadth first to compute the lowest possible number of moves to put the piece at the right position
-#  using basic moves from perm dictionary of the cube
 
 
 if __name__ == '__main__':

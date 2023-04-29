@@ -6,11 +6,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 from multiprocessing import Queue, Process
-import src.modelisation.modelisation as model
-from bin.dijkstra import dijkstra_search
-from projection import Quaternion, project_points
+from src.animation.projection import Quaternion, project_points
 
 """
 Sticker representation
@@ -324,33 +321,22 @@ class InteractiveCube(plt.Axes):
 
     def _rotate(self, moves: list[str]):
         for move in moves:
-            if len(move) > 0:
+            if len(move) == 1 or (len(move) == 2 and move[1] == "'"):
                 self.cube.rotate_face(move[0], -1 if len(move) == 2 else 1)
+            elif len(move) == 3 or (len(move) == 2 and move[1] != "'"):
+                if move[1] == "E":
+                    self.cube.rotate_face("D", -1 if len(move) == 3 else 1, layer=int(move[0]))
+                elif move[1] == "M":
+                    self.cube.rotate_face("L", -1 if len(move) == 3 else 1, layer=int(move[0]))
+                if move[1] == "S":
+                    self.cube.rotate_face("F", -1 if len(move) == 3 else 1, layer=int(move[0]))
 
 
 class CubeAnimation:
-    def animate(self):
-        res = q.get(block=True)
+    def animate(self, cube: InteractiveCube, process: Process, queue: Queue, scramble):
+        res = queue.get(block=True)
 
         try:
-            axe.update_cube(scramble, res.split(" "))
+            cube.update_cube(scramble, res.split(" "))
         except KeyError:
-            p.kill()
-
-
-if __name__ == '__main__':
-    q = Queue()
-    model = model.Cube(3)
-    scramble = model.scramble(20)
-
-    p = Process(target=dijkstra_search, args=(model, q))
-    p.start()
-
-    c = Cube(3)
-    figure, axe = c.draw_interactive()
-    figure.add_axes(axe)
-    axe.update_cube(scramble, [])
-
-    animation = FuncAnimation(figure, CubeAnimation.animate, frames=100)
-
-    plt.show()
+            process.kill()

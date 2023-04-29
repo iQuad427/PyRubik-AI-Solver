@@ -1,29 +1,35 @@
 import heapq
-import multiprocessing
-import time
-from queue import Queue, PriorityQueue
+import math
 
 from src.modelisation.modelisation import Cube, final_position
-from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_all_3x3
+from src.search.evaluation.entropy import entropy_based_score_evaluation_function
+from src.search.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_all_3x3, \
+    simple_distances_total_independent_moves_all_2x2
 from src.search.models.game_state import GameState
 
 
 def dijkstra_search(model: Cube, queue=None):
-    heuristic = simple_distances_total_independent_moves_all_3x3
+    if model.n == 2:
+        heuristic = simple_distances_total_independent_moves_all_2x2
+    elif model.n == 3:
+        heuristic = simple_distances_total_independent_moves_all_3x3
+    else:
+        heuristic = entropy_based_score_evaluation_function
 
-    best_score = heuristic(GameState(model))
+    best_score = math.inf
+    print("best:", best_score)
     distances = {str(model.cube): 0}
 
-    # Your search:
     heap = [(best_score, model.cube, [])]
     heapq.heapify(heap)
 
     while len(heap) != 0:
         current = heapq.heappop(heap)
+        # print(current)
 
         if current[0] < best_score:
             best_score = current[0]
-            print("best score yet:", current[0])
+            print(f"best score yet ({len(current[2])} moves):", current[0])
             print(current[2])
             print(model.permute(current[2]))
 
@@ -35,9 +41,9 @@ def dijkstra_search(model: Cube, queue=None):
 
         if final_position(current[1]):
             print("Solution Found")
-            print("movements count:", distances[str(current[1])])
+            print("movements count:", len(current[2]))
             print("moves:", current[2])
-            print(Cube(3, inner=current[1]))
+            print(Cube(model.n, inner=current[1]))
 
             queue.put('quit')
 
@@ -45,12 +51,12 @@ def dijkstra_search(model: Cube, queue=None):
 
         for move in model.perms:
             distance = distances[str(current[1])] + 1
-            next_state = Cube(3, inner=current[1]).permute([move])
+            next_state = Cube(model.n, inner=current[1]).permute([move])
 
             hashable = str(next_state.cube)
 
             if hashable not in distances or distances[hashable] > distance:
-                heapq.heappush(heap, ((distance + 1) * heuristic(GameState(next_state)), next_state.cube, current[2] + [move]))
+                heapq.heappush(heap, ((distance + 1) ** 2 * heuristic(GameState(next_state)), next_state.cube, current[2] + [move]))
                 distances[hashable] = distance
 
 

@@ -8,7 +8,6 @@ def distance_to_good_face_evaluation_function(state: GameState):
     :param state: the state to evaluate
     :return: score of the state
     """
-
     total_score = 0
 
     for i in range(NB_FACES_CUBE):
