@@ -37,9 +37,9 @@ class GeneticAlgorithm:
             print(f"Generation {generation_count}")
             mate_pool = []
             current_generation = copy.deepcopy(generation)
-            generation = current_generation[0:int(self.nb_individuals / 2) + 1]
+            generation = current_generation[0:int(self.nb_individuals/2)+1]
             for i in range(int(self.nb_individuals) - len(generation)):
-                generation.append(self.mutate(generation[i]))
+                 generation.append(self.mutate(generation[i]))
             # evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
             #              current_generation]
             # print(evaluated)
@@ -49,7 +49,7 @@ class GeneticAlgorithm:
 
             # Selection
             generation = self.selection(generation)
-            top_generation = self.select_best(current_generation, int(len(current_generation) / 10))
+            top_generation = self.select_best(current_generation, int(len(current_generation)/10))
             mate_pool.extend(top_generation)
 
             crossed = self.crossover(generation)
@@ -78,14 +78,16 @@ class GeneticAlgorithm:
                     best_ind = individual
 
             print(f"best : {best_score}")
-            print(best_ind)
-            print(cube.permute(best_ind))
+            self.print_best(best_ind)
+            #print(best_ind)
+            #print(cube.permute(best_ind))
 
             if best_score == 0:
-                break
+                return best_ind
 
             # print(cube.permute(best_ind))
             # print(min([self.evaluate(individual) for individual in generation]))
+        return best_ind
 
     def print_best(self, best_ind):
         print(best_ind)
@@ -107,7 +109,8 @@ class GeneticAlgorithm:
         return new_generation
 
     def mutate(self, individual):
-        for i in range(2):
+        mutation_nbr = random.randint(1, len(individual) - 1)
+        for i in range(mutation_nbr):
             index = random.randint(0, len(individual) - 1)
 
             possibilities = [*self.cube.perms.keys()]
@@ -196,7 +199,7 @@ class GeneticAlgorithm:
             new_generation.extend(
                 self.crossover_individuals(
                     selected_individuals[i],
-                    selected_individuals[random.randint(0, self.nb_individuals - 1)],
+                    selected_individuals[random.randint(0, len(selected_individuals) - 1)],
                 )
             )
         # i = 0
@@ -255,12 +258,15 @@ class GeneticAlgorithm:
 
 if __name__ == "__main__":
     cube = Cube(3)
-    scramble = cube.scramble(10)
+    scramble = cube.scramble(15)
+    scrambled_cube = copy.deepcopy(cube)
     print(scramble)
 
-    GeneticAlgorithm(
-        100, 2000, 15, 0.2, cube, face_color_membership_evaluation_function
+    best_sol = GeneticAlgorithm(
+        100, 2000, 25, 0.05, cube, face_color_membership_evaluation_function
     ).run()
 
+    print(best_sol)
+    print(scrambled_cube.permute(best_sol))
     print(scramble)
     print(cube)

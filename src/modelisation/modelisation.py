@@ -9,6 +9,7 @@ from src.modelisation.data import colors, n, moves, edges, COLORS, corners_3x3, 
 class Cube:
     def __init__(self, dim, inner=None, include_crown_moves=False):
         self.n = dim
+        self.include_crown_moves = include_crown_moves
 
         if inner is not None:
             self.cube = inner
@@ -18,7 +19,7 @@ class Cube:
         if self.n == 2:
             self.perms = cube_moves_2
         elif self.n == 3:
-            if include_crown_moves:
+            if self.include_crown_moves:
                 self.perms = cube_moves_3_crowns
             else:
                 self.perms = cube_moves_3
@@ -114,8 +115,11 @@ class Cube:
         new_cube = list(self.cube)
 
         self._permute(new_cube, perms)
-
-        return Cube(self.n, new_cube)
+        if self.include_crown_moves:
+            cube = Cube(self.n, new_cube, include_crown_moves=True)
+        else:
+            cube = Cube(self.n, new_cube)
+        return cube
 
     def _permute(self, new_cube, perms):
         for perm in perms:
