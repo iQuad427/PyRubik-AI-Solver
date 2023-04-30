@@ -3,11 +3,11 @@ from typing import List
 import numpy as np
 
 from src.modelisation.data import colors, n, moves, edges, COLORS, corners_3x3, resolved_cube_3x3, cube_moves_2, \
-    cube_moves_3, cube_moves_4
+    cube_moves_3, cube_moves_4, cube_moves_3_crowns
 
 
 class Cube:
-    def __init__(self, dim, inner=None):
+    def __init__(self, dim, inner=None, include_crown_moves=False):
         self.n = dim
 
         if inner is not None:
@@ -18,7 +18,10 @@ class Cube:
         if self.n == 2:
             self.perms = cube_moves_2
         elif self.n == 3:
-            self.perms = cube_moves_3
+            if include_crown_moves:
+                self.perms = cube_moves_3_crowns
+            else:
+                self.perms = cube_moves_3
         elif self.n == 4:
             self.perms = cube_moves_4
         else:

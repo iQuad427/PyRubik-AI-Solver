@@ -4,8 +4,11 @@ import random
 from src.modelisation.modelisation import Cube, invert_moves
 from src.evaluation.look_up.functions.distances import (
     simple_distances_total_independent_moves_2x2,
+    simple_distances_total_independent_moves_3x3,
+    simple_distances_total_independent_moves_all_3x3,
+    simple_distances_total_independent_moves_all_2x2
 )
-
+from src.evaluation.basic.membership import face_color_membership_evaluation_function
 
 class GeneticAlgorithm:
     def __init__(
@@ -34,25 +37,19 @@ class GeneticAlgorithm:
             print(f"Generation {generation_count}")
             mate_pool = []
             current_generation = copy.deepcopy(generation)
-            generation = current_generation[0 : int(self.nb_individuals / 2) + 1]
+            generation = current_generation[0:int(self.nb_individuals / 2) + 1]
             for i in range(int(self.nb_individuals) - len(generation)):
                 generation.append(self.mutate(generation[i]))
-            evaluated = [
-                self.evaluate(individual) if self.evaluate(individual) != 0 else 100
-                for individual in current_generation
-            ]
+            # evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
+            #              current_generation]
             # print(evaluated)
-            evaluated = [
-                self.evaluate(individual) if self.evaluate(individual) != 0 else 100
-                for individual in generation
-            ]
+            # evaluated = [self.evaluate(individual) if self.evaluate(individual) != 0 else 100 for individual in
+            #              generation]
             # print(evaluated)
 
             # Selection
             generation = self.selection(generation)
-            top_generation = self.select_best(
-                current_generation, int(len(current_generation) / 10)
-            )
+            top_generation = self.select_best(current_generation, int(len(current_generation) / 10))
             mate_pool.extend(top_generation)
 
             crossed = self.crossover(generation)
@@ -90,6 +87,11 @@ class GeneticAlgorithm:
             # print(cube.permute(best_ind))
             # print(min([self.evaluate(individual) for individual in generation]))
 
+    def print_best(self, best_ind):
+        print(best_ind)
+        print(self.cube.permute(best_ind))
+    def init_pop(self):
+        return [random.choices([*self.cube.perms.keys()], k=self.length_individual)for _ in range(self.nb_individuals)]
     def select_best(self, generation, trunc_value):
         new_generation = []
         # Evaluate each individual
@@ -252,12 +254,12 @@ class GeneticAlgorithm:
 
 
 if __name__ == "__main__":
-    cube = Cube(2)
-    scramble = cube.scramble(30)
+    cube = Cube(3)
+    scramble = cube.scramble(10)
     print(scramble)
 
     GeneticAlgorithm(
-        1000, 200, 25, 0.3, cube, simple_distances_total_independent_moves_2x2
+        100, 2000, 15, 0.2, cube, face_color_membership_evaluation_function
     ).run()
 
     print(scramble)

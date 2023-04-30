@@ -4,6 +4,11 @@ import math
 from src.modelisation.modelisation import Cube, final_position
 from src.search.models.game_state import GameState
 
+from src.evaluation.look_up.functions.distances import (
+    simple_distances_total_independent_moves_2x2,
+    simple_distances_total_independent_moves_3x3,
+    simple_distances_total_independent_moves_all_3x3
+)
 
 def dijkstra_search(model: Cube, queue=None, evaluation_function=None):
     best_score = math.inf
@@ -62,6 +67,6 @@ if __name__ == "__main__":
     print(scramble)
     print(cube)
 
-    dijkstra_search(cube)
+    dijkstra_search(cube, evaluation_function=simple_distances_total_independent_moves_all_3x3)
 
     print(scramble)
