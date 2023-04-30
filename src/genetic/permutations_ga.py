@@ -81,28 +81,17 @@ class PermutationsGa(GeneticAlgorithm):
             generation = current_generation[0 : int(self.nb_individuals / 10) + 1]
             for i in range(int(self.nb_individuals) - len(generation)):
                 generation.append(generation[0][:int(len(generation[i])/10)+1])
-            # evaluated = [
-            #     self.evaluate(individual) if self.evaluate(individual) != 0 else 100
-            #     for individual in generation
-            # ]
-            # print(evaluated)
 
-            # Selection
             generation = self.selection_elitist(generation)
             top_generation = self.select_best(
                 current_generation, int(len(current_generation) / 10)
             )
             mate_pool.extend(top_generation)
-
-            # crossed = self.crossover(generation)
-
-            # mate_pool.extend(crossed)
             mate_pool.extend(generation[int(len(current_generation) / 10):])
 
             for i in range(int(len(generation)/10),len(mate_pool)):
                 if random.random() < self.mutation_rate:
                     mate_pool[i] = self.mutate(top_generation[random.randint(0,len(top_generation)-1)])
-            # generation = self.select_best(mate_pool, len(generation))
             generation = self.select_best(mate_pool, len(current_generation))
 
             best_score = self.evaluate(generation[0])
@@ -118,11 +107,14 @@ class PermutationsGa(GeneticAlgorithm):
             self.print_best(best_ind)
 
             if best_score == 0:
-                return best_ind
-
-            # print(cube.permute(best_ind))
-            # print(min([self.evaluate(individual) for individual in generation]))
-        return best_ind
+                best_moves = []
+                for i in best_ind:
+                    best_moves.extend(PERMUTATIONS[i])
+                return best_moves
+        best_moves = []
+        for i in best_ind:
+            best_moves.extend(PERMUTATIONS[i])
+        return best_moves
 
     def print_best(self, best_ind):
         best_moves = []
@@ -133,18 +125,11 @@ class PermutationsGa(GeneticAlgorithm):
         print(len(best_moves))
         print(self.cube.permute(best_moves))
     def init_pop(self):
+
         return [random.choices(POSSIBILITIES, k=self.length_individual)for _ in range(self.nb_individuals)]
     def mutate(self, individual):
-    # mutation_nbr = random.randint(1, len(individual) - 1)
-    # for i in range(mutation_nbr):
-        # index = random.randint(0, len(individual) - 1)
-        # gene_value = individual[index]
-        # possibilities.remove(gene_value)
 
         mutated = individual.copy()
-        # random_choice = random.choice(possibilities)
-        # mutated[index] = random_choice
-
         evolution_type = random.randint(0, 5)
         if evolution_type == 0:
             perms = random.randint(9, 23)
@@ -201,9 +186,11 @@ if __name__ == "__main__":
     ).run()
 
     cube = cube.permute(best_sol)
-    PermutationsGa(
+    best_sol.extend(PermutationsGa(
         500, 300, 1, 1, cube, face_color_membership_evaluation_function
-    ).run()
+    ).run())
 
+    print(best_sol)
+    print(cube.permute(best_sol))
     print(scramble)
     print(cube)
