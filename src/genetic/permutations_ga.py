@@ -73,63 +73,94 @@ class PermutationsGa(GeneticAlgorithm):
 
     def run(self):
         generation = self.init_pop()
+        # Iterate over generations
         for generation_count in range(self.nb_generations):
             print("<============================>")
             print(f"Generation {generation_count}")
-            mate_pool = []
-            current_generation = copy.deepcopy(generation)
-            generation = current_generation[0 : int(self.nb_individuals / 10) + 1]
-            for i in range(int(self.nb_individuals) - len(generation)):
-                generation.append(generation[0][:int(len(generation[i])/10)+1])
 
+            # Create a mating pool
+            mate_pool = []
+
+            # Copy the current generation
+            current_generation = copy.deepcopy(generation)
+
+            # Select the top 10% of individuals and add them to the next generation
+            generation = current_generation[0: int(self.nb_individuals / 10) + 1]
+
+            # Fill the rest of the next generation by duplicating the top individual and adding mutations
+            for i in range(int(self.nb_individuals) - len(generation)):
+                generation.append(generation[0][:int(len(generation[i]) / 10) + 1])
+
+            # Perform elitist selection on the current generation and add the top individuals to the mating pool
             generation = self.selection_elitist(generation)
-            top_generation = self.select_best(
-                current_generation, int(len(current_generation) / 10)
-            )
+            top_generation = self.select_best(current_generation, int(len(current_generation) / 10))
             mate_pool.extend(top_generation)
             mate_pool.extend(generation[int(len(current_generation) / 10):])
 
-            for i in range(int(len(generation)/10),len(mate_pool)):
+            # Mutate individuals in the mating pool
+            for i in range(int(len(generation) / 10), len(mate_pool)):
                 if random.random() < self.mutation_rate:
-                    mate_pool[i] = self.mutate(top_generation[random.randint(0,len(top_generation)-1)])
+                    mate_pool[i] = self.mutate(top_generation[random.randint(0, len(top_generation) - 1)])
+
+            # Select the best individuals from the mating pool to form the next generation
             generation = self.select_best(mate_pool, len(current_generation))
 
+            # Evaluate the fitness of the best individual in the current generation
             best_score = self.evaluate(generation[0])
             best_ind = generation[0]
 
+            # Evaluate the fitness of each individual in the current generation and update the best individual if necessary
             for individual in generation:
                 new_score = self.evaluate(individual)
                 if new_score < best_score:
                     best_score = new_score
                     best_ind = individual
 
+            # Print the best individual and its fitness score
             print(f"best : {best_score}")
-            self.print_best(best_ind)
+            self.print_individual(best_ind)
 
+            # If a solution is found, return the corresponding sequence of moves
             if best_score == 0:
                 best_moves = []
                 for i in best_ind:
                     best_moves.extend(PERMUTATIONS[i])
                 return best_moves
+
+        # If no solution is found, return the sequence of moves for the best individual in the last generation
         best_moves = []
         for i in best_ind:
             best_moves.extend(PERMUTATIONS[i])
         return best_moves
 
-    def print_best(self, best_ind):
+    def print_individual(self, individual):
+        """
+        Given the best individual, print its corresponding moves, its length and the final state of the cube.
+        """
         best_moves = []
-        print(best_ind)
-        for i in best_ind:
+        print(individual)
+        # Loop through each move of the best individual and get the corresponding permutation moves
+        for i in individual:
             best_moves.extend(PERMUTATIONS[i])
         print(best_moves)
+        # Print the length of the permutation sequence
         print(len(best_moves))
+        # Permute the cube with the obtained permutation sequence and print the resulting cube state
         print(self.cube.permute(best_moves))
+
     def init_pop(self):
+        """
+        Initialize a population of individuals where each individual is a list of integer values representing moves.
+        """
+        return [random.choices(POSSIBILITIES, k=self.length_individual) for _ in range(self.nb_individuals)]
 
-        return [random.choices(POSSIBILITIES, k=self.length_individual)for _ in range(self.nb_individuals)]
     def mutate(self, individual):
-
+        """
+        Given an individual, apply mutation to it by appending new random moves.
+        This mutation method is from this project https://github.com/rvaccarim/genetic_rubik
+        """
         mutated = individual.copy()
+        # Select a mutation type randomly from the given six types
         evolution_type = random.randint(0, 5)
         if evolution_type == 0:
             perms = random.randint(9, 23)
@@ -166,8 +197,10 @@ class PermutationsGa(GeneticAlgorithm):
 
         return mutated
 
-
     def evaluate(self, individual):
+        """
+        Evaluate an individual by permuting a given cube object with the individual's permutation keys and passing the resulting cube to an evaluation function
+        """
         perms = []
         for i in individual:
             perms.extend(PERMUTATIONS[i])

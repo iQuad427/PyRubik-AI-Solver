@@ -5,6 +5,7 @@ from matplotlib.animation import FuncAnimation
 
 import src.modelisation.modelisation as model
 from src.animation.cube_interactive import Cube, CubeAnimation
+from src.evaluation.look_up.functions.distances import simple_distances_total_independent_moves_all_3x3
 from src.search.dijkstra.dijkstra import dijkstra_search
 
 if __name__ == "__main__":
@@ -14,7 +15,7 @@ if __name__ == "__main__":
     print("Scramble:", scramble)
     print(model)
 
-    p = Process(target=dijkstra_search, args=(model, q))
+    p = Process(target=dijkstra_search, args=(model, q, simple_distances_total_independent_moves_all_3x3))
     p.start()
 
     c = Cube(3)
