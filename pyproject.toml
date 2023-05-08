@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "pyrubik-ai-solver"
+version = "0.1.0"
+description = ""
+authors = ["iQuad <quentin.roels@gmail.com>"]
+readme = "README.md"
+packages = [{include = "pyrubik_ai_solver"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9, <3.11"
+numpy = "1.24.3"
+pandas = "1.1.5"
+matplotlib = "3.7.1"
+tensorflow = "2.11"
+xgboost = "1.7.5"
+scikit-learn = "1.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

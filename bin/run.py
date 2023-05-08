@@ -9,16 +9,18 @@ from src.evaluation.look_up.functions.distances import simple_distances_total_in
 from src.search.dijkstra.dijkstra import dijkstra_search
 
 if __name__ == "__main__":
+    size = 3
+
     q = Queue()
-    model = model.Cube(3)
-    scramble = model.scramble(20)
+    model = model.Cube(size)
+    scramble = model.scramble(15)
     print("Scramble:", scramble)
     print(model)
 
     p = Process(target=dijkstra_search, args=(model, q, simple_distances_total_independent_moves_all_3x3))
     p.start()
 
-    c = Cube(3)
+    c = Cube(size)
     figure, axe = c.draw_interactive()
     figure.add_axes(axe)
     axe.update_cube(scramble, [])
