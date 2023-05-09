@@ -116,7 +116,28 @@ def simple_distances_total_independent_moves_white_face_3x3(state: GameState):
     return f + g
 
 
+def simple_distances_total_independent_moves_3x3(state: GameState):
+    f = all_corners_completion(state) * simple_distances_corners(
+        state.cube, corners_3x3
+    )
+    g = all_edges_completion(state) * simple_distances_edges(state.cube)
+
+    return f + g
+
+
 def simple_distances_total_independent_moves_all_3x3(state: GameState):
+    f = all_corners_completion(state) * simple_distances_corners(
+        state.cube, corners_3x3
+    )
+    g = all_edges_completion(state) * simple_distances_edges(state.cube)
+    h = entropy_based_score_evaluation_function(state)
+    i = face_color_membership_evaluation_function(state)
+    j = distance_to_good_face_evaluation_function(state)
+
+    return (f + g) * (h + i + j)
+
+
+def simple_distances_total_independent_moves_all_3x3_upscaled(state: GameState):
     f = all_corners_completion(state) * simple_distances_corners(
         state.cube, corners_3x3
     )
@@ -136,13 +157,6 @@ def simple_distances_total_independent_moves_all_2x2(state: GameState):
     h = distance_to_good_face_evaluation_function(state)
 
     return f * g * h
-
-
-def simple_distances_total_independent_moves_3x3(state: GameState):
-    return (
-        simple_distances_edges(state.cube)
-        + simple_distances_corners(state.cube, corners_3x3)
-    ) * white_cross_completion(state)
 
 
 def simple_distances_total_independent_moves_2x2(state: GameState):

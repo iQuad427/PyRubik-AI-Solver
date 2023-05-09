@@ -1,30 +1,47 @@
 import heapq
 import math
 
+from src.modelisation.data import scrambled_3
 from src.modelisation.modelisation import Cube, final_position
 from src.search.models.game_state import GameState
 
-from src.evaluation.look_up.functions.distances import (
-    simple_distances_total_independent_moves_2x2,
-    simple_distances_total_independent_moves_3x3,
-    simple_distances_total_independent_moves_all_3x3
-)
 
-def dijkstra_search(model: Cube, queue=None, evaluation_function=None):
+def dijkstra_search(model: Cube, queue=None, evaluation_function=None, distance=True):
     best_score = math.inf
+    number_move = 0
     distances = {str(model.cube): 0}
 
     heap = [(best_score, model.cube, [])]
     heapq.heapify(heap)
 
+    weight = evaluation_function(GameState(Cube(3, inner=scrambled_3)))
+    print(weight)
+    if weight < 1:
+        distance_weighting = lambda x: 0
+        distance_heuristic_link = lambda x, y: x + y
+    elif weight < 1_000:
+        distance_weighting = lambda x: 2 * x if distance else 0
+        distance_heuristic_link = lambda x, y: x + y
+    elif weight < 100_000:
+        distance_weighting = lambda x: x ** 2 if distance else 0
+        distance_heuristic_link = lambda x, y: x + y
+    elif weight < 1_000_000:
+        distance_weighting = lambda x: x if distance else 1
+        distance_heuristic_link = lambda x, y: x * y
+    else:
+        distance_weighting = lambda x: (1 + x) ** 2 if distance else 1
+        distance_heuristic_link = lambda x, y: x * y
+
     while len(heap) != 0:
         current = heapq.heappop(heap)
 
-        if current[0] < best_score:
+        if current[0] < best_score or (current[0] == best_score and len(current[2]) < number_move):
             best_score = current[0]
             print(f"best score yet ({len(current[2])} moves):", current[0])
             print(current[2])
             print(model.permute(current[2]))
+
+            number_move = len(current[2])
 
             if queue is not None:
                 data = ""
@@ -52,21 +69,13 @@ def dijkstra_search(model: Cube, queue=None, evaluation_function=None):
                 heapq.heappush(
                     heap,
                     (
-                        (distance + 1) ** 2
-                        * evaluation_function(GameState(next_state)),
+                        distance_heuristic_link(
+                            distance_weighting(distance),
+                            evaluation_function(GameState(next_state))
+                        ),
                         next_state.cube,
                         current[2] + [move],
                     ),
                 )
                 distances[hashable] = distance
 
-
-if __name__ == "__main__":
-    cube = Cube(3)
-    scramble = cube.scramble(20)
-    print(scramble)
-    print(cube)
-
-    dijkstra_search(cube, evaluation_function=simple_distances_total_independent_moves_all_3x3)
-
-    print(scramble)

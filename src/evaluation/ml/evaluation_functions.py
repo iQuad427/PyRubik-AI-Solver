@@ -11,9 +11,9 @@ from src.evaluation.ml.xgb_regressor import xgb_regressor_evaluation_function
 
 ML_EVALUATION_FUNCTIONS = {
     "Gradient Booster Regressor": gbr_regressor_evaluation_function,
-    "Support Vector Regression": svr_regressor_evaluation_function,
+    # "Support Vector Regression": svr_regressor_evaluation_function,
     "XGB Regressor": xgb_regressor_evaluation_function,
     # "Random Forest Regressor": random_forest_regressor_evaluation_function,
     "Decision Tree Regressor": dtr_regressor_evaluation_function,
-    "Neural Network Regressor": nnr_regressor_evaluation_function,
+    # "Neural Network Regressor": nnr_regressor_evaluation_function,
 }

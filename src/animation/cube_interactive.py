@@ -323,6 +323,9 @@ class InteractiveCube(plt.Axes):
         for move in moves:
             if len(move) == 1 or (len(move) == 2 and move[1] == "'"):
                 self.cube.rotate_face(move[0], -1 if len(move) == 2 else 1)
+            elif len(move) == 2 and move[1] == "2":
+                self.cube.rotate_face(move[0], 1)
+                self.cube.rotate_face(move[0], 1)
             elif len(move) == 3 or (len(move) == 2 and move[1] != "'"):
                 if move[1] == "E":
                     self.cube.rotate_face("D", -1 if len(move) == 3 else 1, layer=int(move[0]))
@@ -340,3 +343,12 @@ class CubeAnimation:
             cube.update_cube(scramble, res.split(" "))
         except KeyError:
             process.kill()
+
+
+if __name__ == '__main__':
+    c = Cube(3)
+    figure, axe = c.draw_interactive()
+    figure.add_axes(axe)
+    axe.update_cube(["F", "U", "L", "R", "F", "L"], [])
+
+    plt.show()

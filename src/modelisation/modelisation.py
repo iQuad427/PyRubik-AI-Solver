@@ -2,7 +2,7 @@ import random
 from typing import List
 import numpy as np
 
-from src.modelisation.data import colors, n, moves, edges, COLORS, corners_3x3, resolved_cube_3x3, cube_moves_2, \
+from src.modelisation.data import colors, moves, edges, COLORS, corners_3x3, resolved_cube_3x3, cube_moves_2, \
     cube_moves_3, cube_moves_4, cube_moves_3_crowns
 
 
@@ -419,12 +419,19 @@ def verify_edge(edge: int, cube: Cube):
 
 
 if __name__ == '__main__':
-    test = ['N', 'R', 'R', 'D', "D'", 'B', 'R', 'D', "R'", 'D', 'U', 'D', 'L', 'D', 'N', "L'", 'U', 'D', 'N', "D'", "L'", 'L', 'D', "R'", 'N', 'U', 'D', "D'", "B'", 'U']
-    res = simplify_list_of_perms(test)
-    print(res)
+    # test = ['N', 'R', 'R', 'D', "D'", 'B', 'R', 'D', "R'", 'D', 'U', 'D', 'L', 'D', 'N', "L'", 'U', 'D', 'N', "D'", "L'", 'L', 'D', "R'", 'N', 'U', 'D', "D'", "B'", 'U']
+    # res = simplify_list_of_perms(test)
+    # print(res)
+    #
+    # print(Cube(2).perms)
+    # print(Cube(3).perms)
+    #
+    # print(Cube(2).permute(test))
+    # print(Cube(2).permute(res))
 
-    print(Cube(2).perms)
-    print(Cube(3).perms)
+    cube = Cube(3)
+    cube.scramble(1000)
 
-    print(Cube(2).permute(test))
-    print(Cube(2).permute(res))
+    print(cube.cube)
+
+

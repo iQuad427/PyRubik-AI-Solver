@@ -4,6 +4,7 @@ from typing import Callable
 
 from src.modelisation.modelisation import Cube, final_position
 from src.search.models.game_state import GameState
+from src.modelisation.data import scrambled_3
 
 
 class DijkstraGameEngine:
@@ -14,12 +15,29 @@ class DijkstraGameEngine:
     """
 
     def __init__(
-        self,
-        starting_state,
-        evaluation_function: Callable[[GameState], int],
+            self,
+            starting_state,
+            evaluation_function: Callable[[GameState], int]
     ):
         self.starting_state = starting_state
         self.evaluation_function = evaluation_function
+
+        weight = evaluation_function(GameState(Cube(3, inner=scrambled_3)))
+        if weight < 1:
+            self.distance_weighting = lambda x: 0
+            self.distance_heuristic_link = lambda x, y: x + y
+        elif weight < 1_000:
+            self.distance_weighting = lambda x: 2 * x
+            self.distance_heuristic_link = lambda x, y: x + y
+        elif weight < 100_000:
+            self.distance_weighting = lambda x: x ** 2
+            self.distance_heuristic_link = lambda x, y: x + y
+        elif weight < 1_000_000:
+            self.distance_weighting = lambda x: x
+            self.distance_heuristic_link = lambda x, y: x * y
+        else:
+            self.distance_weighting = lambda x: (1 + x) ** 2
+            self.distance_heuristic_link = lambda x, y: x * y
 
     def run(self):
         model = self.starting_state.cube
@@ -32,7 +50,6 @@ class DijkstraGameEngine:
 
         while len(heap) != 0:
             current = heapq.heappop(heap)
-            # print(current)
 
             if current[0] < best_score:
                 best_score = current[0]
