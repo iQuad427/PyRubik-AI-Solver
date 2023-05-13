@@ -2,7 +2,7 @@ import copy
 import random
 
 from src.evaluation.basic.entropy import entropy_based_score_evaluation_function
-from src.modelisation.modelisation import Cube, invert_moves
+from src.modelisation.modelisation import Cube, invert_moves, simplify_formula
 from src.evaluation.look_up.functions.distances import (
     simple_distances_total_independent_moves_2x2,
     simple_distances_total_independent_moves_3x3,
@@ -14,63 +14,58 @@ from src.evaluation.basic.membership import face_color_membership_evaluation_fun
 from src.genetic.simple_ga import GeneticAlgorithm
 
 
-FULL_ROTATIONS = ["L' M M M R".split(" "),
-    "L M R'".split(" "),
-    "L L M M R' R'".split(" "),
-    "U E E E D'".split(" "),
-    "U' E D".split(" "),
-    "U' U' E E D D".split(" ")]
-
-
-ORIENTATIONS = [
-    "F S B'".split(" "),
-    "F F S S B' B'".split(" "),
-    "F' S S S B".split(" ")]
-PERMUTATIONS = [
-    "L' M M M R".split(" "),
-    "L M R'".split(" "),
-    "L L M M R' R'".split(" "),
-    "U E E E D'".split(" "),
-    "U' E D".split(" "),
-    "U' U' E E D D".split(" "),
-    "F S B'".split(" "),
-    "F F S S B' B'".split(" "),
-    "F' S S S B".split(" "),
-    # permutes two edges: U face, bottom edge and right edge
-    "F' L' B' R' U' R U' B L F R U R' U".split(" "),
-    # permutes two edges: U face, bottom edge and left edge
-    "F R B L U L' U B' R' F' L' U' L U'".split(" "),
-    # permutes two corners: U face, bottom left and bottom right
-    "U U B U U B' R R F R' F' U U F' U U F R'".split(" "),
-    # permutes three corners: U face, bottom left and top left
-    "U U R U U R' F F L F' L' U U L' U U L F'".split(" "),
-    # permutes three centers: F face, top, right, bottom
-    "U' B B D D L' F F D D B B R' U'".split(" "),
-    # permutes three centers: F face, top, right, left
-    "U B B D D R F F D D B B L U".split(" "),
-    # U face: bottom edge <-> right edge, bottom right corner <-> top right corner
-    "D' R' D R R U' R B B L U' L' B B U R R".split(" "),
-    # U face: bottom edge <-> right edge, bottom right corner <-> left right corner
-    "D L D' L L U L' B B R' U R B B U' L L".split(" "),
-    # U face: top edge <-> bottom edge, bottom left corner <-> top right corner
-    "R' U L' U U R U' L R' U L' U U R U' L U'".split(" "),
-    # U face: top edge <-> bottom edge, bottom right corner <-> top left corner
-    "L U' R U U L' U R' L U' R U U L' U R' U".split(" "),
-    # permutes three corners: U face, bottom right, bottom left and top left
-    "F' U B U' F U B' U'".split(" "),
-    # permutes three corners: U face, bottom left, bottom right and top right
-    "F U' B' U F' U' B U".split(" "),
-    # permutes three edges: F face bottom, F face top, B face top
-    "L' U U L R' F F R".split(" "),
-    # permutes three edges: F face top, B face top, B face bottom
-    "R' U U R L' B B L".split(" "),
-    # H permutation: U Face, swaps the edges horizontally and vertically
-    "M M U M M U U M M U M M".split(" ")
-]
-POSSIBILITIES = [i for i in range(len(PERMUTATIONS))]
-
 class PermutationsGa(GeneticAlgorithm):
 
+    def __init__(
+            self,
+            nb_individuals,
+            nb_generations,
+            length_individual,
+            mutation_rate,
+            cube: Cube,
+            evaluation_function,
+    ):
+        super().__init__(nb_individuals,nb_generations,length_individual,mutation_rate,cube,evaluation_function)
+        self.permutations = [
+        "L' M M M R".split(" "),
+        "L M R'".split(" "),
+        "L L M M R' R'".split(" "),
+        "U E E E D'".split(" "),
+        "U' E D".split(" "),
+        "U' U' E E D D".split(" "),
+        "F S B'".split(" "),
+        "F F S S B' B'".split(" "),
+        "F' S S S B".split(" "),
+        # permutes two edges: U face, bottom edge and right edge
+        "F' L' B' R' U' R U' B L F R U R' U".split(" "),
+        # permutes two edges: U face, bottom edge and left edge
+        "F R B L U L' U B' R' F' L' U' L U'".split(" "),
+        # permutes two corners: U face, bottom left and bottom right
+        "U U B U U B' R R F R' F' U U F' U U F R'".split(" "),
+        # permutes three corners: U face, bottom left and top left
+        "U U R U U R' F F L F' L' U U L' U U L F'".split(" "),
+        # permutes three centers: F face, top, right, bottom
+        "U' B B D D L' F F D D B B R' U'".split(" "),
+        # permutes three centers: F face, top, right, left
+        "U B B D D R F F D D B B L U".split(" "),
+        # U face: bottom edge <-> right edge, bottom right corner <-> top right corner
+        "D' R' D R R U' R B B L U' L' B B U R R".split(" "),
+        # U face: bottom edge <-> right edge, bottom right corner <-> left right corner
+        "D L D' L L U L' B B R' U R B B U' L L".split(" "),
+        # U face: top edge <-> bottom edge, bottom left corner <-> top right corner
+        "R' U L' U U R U' L R' U L' U U R U' L U'".split(" "),
+        # U face: top edge <-> bottom edge, bottom right corner <-> top left corner
+        "L U' R U U L' U R' L U' R U U L' U R' U".split(" "),
+        # permutes three corners: U face, bottom right, bottom left and top left
+        "F' U B U' F U B' U'".split(" "),
+        # permutes three corners: U face, bottom left, bottom right and top right
+        "F U' B' U F' U' B U".split(" "),
+        # permutes three edges: F face bottom, F face top, B face top
+        "L' U U L R' F F R".split(" "),
+        # permutes three edges: F face top, B face top, B face bottom
+        "R' U U R L' B B L".split(" "),
+        # H permutation: U Face, swaps the edges horizontally and vertically
+        "M M U M M U U M M U M M".split(" ")]
     def run(self):
         generation = self.init_pop()
         # Iterate over generations
@@ -124,13 +119,13 @@ class PermutationsGa(GeneticAlgorithm):
             if best_score == 0:
                 best_moves = []
                 for i in best_ind:
-                    best_moves.extend(PERMUTATIONS[i])
+                    best_moves.extend(self.permutations[i])
                 return best_moves
 
         # If no solution is found, return the sequence of moves for the best individual in the last generation
         best_moves = []
         for i in best_ind:
-            best_moves.extend(PERMUTATIONS[i])
+            best_moves.extend(self.permutations[i])
         return best_moves
 
     def print_individual(self, individual):
@@ -141,7 +136,7 @@ class PermutationsGa(GeneticAlgorithm):
         print(individual)
         # Loop through each move of the best individual and get the corresponding permutation moves
         for i in individual:
-            best_moves.extend(PERMUTATIONS[i])
+            best_moves.extend(self.permutations[i])
         print(best_moves)
         # Print the length of the permutation sequence
         print(len(best_moves))
@@ -152,7 +147,8 @@ class PermutationsGa(GeneticAlgorithm):
         """
         Initialize a population of individuals where each individual is a list of integer values representing moves.
         """
-        return [random.choices(POSSIBILITIES, k=self.length_individual) for _ in range(self.nb_individuals)]
+        possibilities = [i for i in range(len(self.permutations))]
+        return [random.choices(possibilities, k=self.length_individual) for _ in range(self.nb_individuals)]
 
     def mutate(self, individual):
         """
@@ -203,7 +199,7 @@ class PermutationsGa(GeneticAlgorithm):
         """
         perms = []
         for i in individual:
-            perms.extend(PERMUTATIONS[i])
+            perms.extend(self.permutations[i])
         cube = self.cube.permute(perms)
 
         return self.evaluation_function(Cube(cube.n, cube))
@@ -211,19 +207,20 @@ class PermutationsGa(GeneticAlgorithm):
 if __name__ == "__main__":
     best_sol =[]
     cube = Cube(3, include_crown_moves=True)
-    scramble = cube.scramble(15)
+    scramble = cube.scramble(20)
     print(scramble)
 
     best_sol = GeneticAlgorithm(
-        100, 100, 25, 0.3, cube, face_color_membership_evaluation_function
+        200, 300, 25, 0.8, cube, face_color_membership_evaluation_function
     ).run()
 
     cube = cube.permute(best_sol)
     best_sol.extend(PermutationsGa(
-        500, 300, 1, 1, cube, face_color_membership_evaluation_function
+        500, 400, 1, 1, cube, face_color_membership_evaluation_function
     ).run())
 
     print(best_sol)
     print(cube.permute(best_sol))
     print(scramble)
     print(cube)
+    print("length of the solution : ", len(simplify_formula(best_sol)))

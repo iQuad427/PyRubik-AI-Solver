@@ -54,20 +54,28 @@ class GeneticAlgorithm:
 
             # Select the top 10% of individuals from the previous generation to add to the mate pool
             top_generation = self.select_best(current_generation, int(len(current_generation) / 10))
-            mate_pool.extend(top_generation)
+
 
             # Create new individuals by performing crossover
-            crossed = self.crossover(generation)
-            mate_pool.extend(crossed)
+            # crossed = self.crossover(generation)
+            # mate_pool.extend(crossed)
+            mate_pool.extend(generation)
 
             # Randomly mutate individuals in the mate pool based on the mutation rate
             for i in range(len(mate_pool)):
                 if random.random() < self.mutation_rate:
                     mate_pool[i] = self.mutate(mate_pool[i])
-
+            mate_pool.extend(top_generation)
             # Select the top individuals from the mate pool to create the next generation
             generation = self.select_best(mate_pool, len(generation))
-
+            # For more diversification in the population
+            check_duplicates_generation = []
+            for i in generation:
+                if i not in check_duplicates_generation:
+                    check_duplicates_generation.append(i)
+            for i in range(100 - len(check_duplicates_generation)):
+                check_duplicates_generation.append(self.mutate(generation[random.randint(0, int(len(generation)/10))]))
+            generation = check_duplicates_generation
             # Evaluate the fitness of all individuals in the current generation and update the best individual
             best_score = self.evaluate(generation[0])
             best_ind = generation[0]
@@ -242,12 +250,12 @@ class GeneticAlgorithm:
 
 if __name__ == "__main__":
     cube = Cube(3)
-    scramble = cube.scramble(15)
+    scramble = cube.scramble(20)
     scrambled_cube = copy.deepcopy(cube)
     print(scramble)
 
     best_sol = GeneticAlgorithm(
-        500, 2000, 10, 0.2, cube, face_color_membership_evaluation_function
+        200, 1000, 20, 0.8, cube, face_color_membership_evaluation_function
     ).run()
 
     print(best_sol)
