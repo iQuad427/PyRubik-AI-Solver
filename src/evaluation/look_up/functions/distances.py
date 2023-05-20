@@ -2,7 +2,7 @@ from src.modelisation.data import (
     corners_2x2,
     edges,
     corners_3x3,
-    resolved_cube_3x3,
+    resolved_cube_3x3, resolved_cube_2x2,
 )
 from src.modelisation.modelisation import Cube
 from src.evaluation.basic.distance import distance_to_good_face_evaluation_function
@@ -36,6 +36,12 @@ def verify_corner(corner: int, cube: Cube):
     ]
 
 
+def verify_corner_2(corner: int, cube: Cube):
+    return [resolved_cube_2x2[facet] for facet in corners_2x2[corner]] == [
+        cube.cube[facet] for facet in corners_2x2[corner]
+    ]
+
+
 def verify_edge(edge: int, cube: Cube):
     return [resolved_cube_3x3[facet] for facet in edges[edge]] == [
         cube.cube[facet] for facet in edges[edge]
@@ -63,7 +69,7 @@ def all_corners_completion(state: GameState):
 def all_corners_completion_2x2(state: GameState):
     score = 0
     for i in range(8):
-        if not verify_corner(i, state.cube):
+        if not verify_corner_2(i, state.cube):
             score += 1
 
     return score
@@ -156,12 +162,14 @@ def simple_distances_total_independent_moves_all_2x2(state: GameState):
     g = entropy_based_score_evaluation_function(state)
     h = distance_to_good_face_evaluation_function(state)
 
-    return f * g * h
+    return f + g + h
 
 
-def simple_distances_total_independent_moves_2x2(state: GameState):
-    h = simple_distances_corners(state.cube, corners_2x2) * white_corners_completion(
-        state
+def simple_distances_total_independent_moves_all_2x2_upscaled(state: GameState):
+    f = all_corners_completion_2x2(state) * simple_distances_corners(
+        state.cube, corners_2x2
     )
-    g = distance_to_good_face_evaluation_function(state)
-    return h + g
+    g = entropy_based_score_evaluation_function(state)
+    h = distance_to_good_face_evaluation_function(state)
+
+    return f * g * h

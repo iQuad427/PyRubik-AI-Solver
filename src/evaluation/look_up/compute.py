@@ -43,7 +43,7 @@ def orient(piece: list[int], turns: int):
     return new_orientation
 
 
-def depth_search(model: Cube, piece: int, max_depth: int, type: str):
+def breadth_first_search(model: Cube, piece: int, max_depth: int, type: str):
     queue = Queue()
     queue.put((0, model, []))
 
@@ -84,7 +84,7 @@ def look_up_table_corners():
 
                     set_corner(cube, corners_2x2[position], cuby)
 
-                    result = depth_search(cube, piece, 4, "corner")
+                    result = breadth_first_search(cube, piece, 4, "corner")
                     if result is not None:
                         print(str((position, tuple(cuby))), "->", str(result[2]))
                         distances[(position, tuple(cuby))] = result[2]
@@ -106,7 +106,7 @@ def look_up_table_edges():
                 cuby = [resolved_cube[facet] for facet in facets]
                 set_edge(cube, edges[position], cuby)
 
-                result = depth_search(cube, piece, 4, "edge")
+                result = breadth_first_search(cube, piece, 4, "edge")
                 if result is not None:
                     print(str((position, tuple(cuby))), "->", str(result[2]))
                     distances[(position, tuple(cuby))] = result[2]

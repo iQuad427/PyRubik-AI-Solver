@@ -73,7 +73,7 @@ def solve_using_deep_and_standard_when_blocked(cube):
     previous_heuristic_score = math.inf
     while True:
         engine = DepthFirstSearchEngine(
-            GameState(cube), combined_evaluation_function, 3
+            GameState(cube), simple_distances_total_independent_moves_all_3x3, 3
         )
         engine.run()
 

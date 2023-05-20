@@ -132,7 +132,7 @@ class Cube:
                         new_cube[v] = save[u[i]]
 
     def get_face_colors(self, face: int) -> List[str]:
-        return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n - 1]
+        return self.cube[face * self.n * self.n: (face + 1) * self.n * self.n]
 
     def get_color(self, face: int, row: int, col: int) -> List[str]:
         return self.cube[face * self.n * self.n + row * self.n + col]
@@ -418,20 +418,5 @@ def verify_edge(edge: int, cube: Cube):
     return [resolved_cube_3x3[facet] for facet in edges[edge]] == [cube.cube[facet] for facet in edges[edge]]
 
 
-if __name__ == '__main__':
-    # test = ['N', 'R', 'R', 'D', "D'", 'B', 'R', 'D', "R'", 'D', 'U', 'D', 'L', 'D', 'N', "L'", 'U', 'D', 'N', "D'", "L'", 'L', 'D', "R'", 'N', 'U', 'D', "D'", "B'", 'U']
-    # res = simplify_list_of_perms(test)
-    # print(res)
-    #
-    # print(Cube(2).perms)
-    # print(Cube(3).perms)
-    #
-    # print(Cube(2).permute(test))
-    # print(Cube(2).permute(res))
-
-    cube = Cube(3)
-    cube.scramble(1000)
-
-    print(cube.cube)
 
 

@@ -1,7 +1,8 @@
 import heapq
 import math
 
-from src.modelisation.data import scrambled_3
+from src.evaluation.solver.kociemba_evaluation import kociemba_distance_evaluation
+from src.modelisation.data import scrambled_3, scrambled_2
 from src.modelisation.modelisation import Cube, final_position
 from src.search.models.game_state import GameState
 
@@ -14,16 +15,18 @@ def dijkstra_search(model: Cube, queue=None, evaluation_function=None, distance=
     heap = [(best_score, model.cube, [])]
     heapq.heapify(heap)
 
-    weight = evaluation_function(GameState(Cube(3, inner=scrambled_3)))
-    print(weight)
+    weight = evaluation_function(GameState(Cube(model.n, inner=eval(f"scrambled_{model.n}"))))
+
+    # Use the heuristic typical value to extend the weight to give to the distance
+    # (Used to avoid giving too much importance to the distance and inversely)
     if weight < 1:
-        distance_weighting = lambda x: 0
-        distance_heuristic_link = lambda x, y: x + y
+        distance_weighting = lambda x: 1
+        distance_heuristic_link = lambda x, y: x * y
     elif weight < 1_000:
         distance_weighting = lambda x: 2 * x if distance else 0
         distance_heuristic_link = lambda x, y: x + y
     elif weight < 100_000:
-        distance_weighting = lambda x: x ** 2 if distance else 0
+        distance_weighting = lambda x: 10 * x if distance else 0
         distance_heuristic_link = lambda x, y: x + y
     elif weight < 1_000_000:
         distance_weighting = lambda x: x if distance else 1
@@ -34,6 +37,7 @@ def dijkstra_search(model: Cube, queue=None, evaluation_function=None, distance=
 
     while len(heap) != 0:
         current = heapq.heappop(heap)
+        # print(current)
 
         if current[0] < best_score or (current[0] == best_score and len(current[2]) < number_move):
             best_score = current[0]
