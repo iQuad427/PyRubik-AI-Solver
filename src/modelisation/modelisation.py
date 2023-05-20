@@ -417,6 +417,33 @@ def verify_corner(corner: int, cube: Cube):
 def verify_edge(edge: int, cube: Cube):
     return [resolved_cube_3x3[facet] for facet in edges[edge]] == [cube.cube[facet] for facet in edges[edge]]
 
+def simplify_formula(formula):
+    """
+    Replaces sequences of 2 same move by the equivalent double move
+    Replaces sequences of 3 same moves by the equivalent inverse move
+    """
+    simplified = []
+    i = 0
+    while (i < len(formula)):
+        if (i < len(formula)-2) and (formula[i] == formula[i+1]) and (formula[i] == formula[i+2]):
+            if (len(formula[i]) == 1):
+                eq_move = formula[i] + "'"
+            else:
+                eq_move = formula[i][0]
+            simplified.append(eq_move)
+            i += 2
+        elif (i < len(formula)-1) and (formula[i] == formula[i+1]):
+            if (len(formula[i]) == 1):
+                eq_move = formula[i] + "2"
+            else:
+                eq_move = formula[i][0] + "2"
+            simplified.append(eq_move)
+            i += 1
+        else:
+            simplified.append(formula[i])
+        i += 1
+
+    return simplified
 
 
 
