@@ -47,9 +47,9 @@ def run_game_engine(
 
 
 def compute_score_evolution_for_game_engine_and_evaluation_functions(
-    engine_eval_runs, reference_evaluation_function
+    time_limit, engine_eval_runs, reference_evaluation_function
 ):
-    time_limit = 10  # Time limit in seconds
+    time_limit = time_limit  # Time limit in seconds
     results = []
     processes = []
     names = []
@@ -107,6 +107,7 @@ def compute_score_evolution_for_game_engine_and_evaluation_functions(
 
 def compute_and_plot_evolution(all_configs):
     prepared_data = compute_score_evolution_for_game_engine_and_evaluation_functions(
+        time_limit=120,
         engine_eval_runs=all_configs,
         reference_evaluation_function=combined_simple_heuristics_evaluation_upscaled,
     )
@@ -136,9 +137,7 @@ def compute_and_plot_evolution(all_configs):
     plt.show()
 
 
-
-
-def plot_box_plots_of_best_scores(all_configs, number_of_eval=20):
+def plot_box_plots_of_best_scores(all_configs, number_of_eval=20, time_limit=10):
     best_scores = defaultdict(list)
 
     names_to_index = {}
@@ -151,6 +150,7 @@ def plot_box_plots_of_best_scores(all_configs, number_of_eval=20):
     for i in range(number_of_eval):
         print(f"Run {i+1}/{number_of_eval}")
         prepared_data = compute_score_evolution_for_game_engine_and_evaluation_functions(
+            time_limit=time_limit,
             engine_eval_runs=all_configs,
             reference_evaluation_function=combined_simple_heuristics_evaluation_upscaled,
         )
@@ -170,6 +170,7 @@ def plot_box_plots_of_best_scores(all_configs, number_of_eval=20):
     for name, index in names_to_index.items():
         print(f"{index}: {name}")
 
+
 def main():
     all_configs = [
         (game_engine, evaluation_function)
@@ -179,7 +180,8 @@ def main():
 
     # compute_and_plot_evolution(all_configs)
 
-    plot_box_plots_of_best_scores(all_configs, number_of_eval=50)
+    plot_box_plots_of_best_scores(all_configs, number_of_eval=1, time_limit=10)
+
 
 if __name__ == "__main__":
     main()

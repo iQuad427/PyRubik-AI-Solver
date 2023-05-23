@@ -4,7 +4,7 @@ from typing import Callable
 
 from src.modelisation.modelisation import Cube, final_position
 from src.search.models.game_state import GameState
-from src.modelisation.data import scrambled_3
+from src.modelisation.data import scrambled_3, stagnate_3
 
 
 class DijkstraGameEngine:
@@ -23,6 +23,14 @@ class DijkstraGameEngine:
         self.evaluation_function = evaluation_function
 
         weight = evaluation_function(GameState(Cube(3, inner=scrambled_3)))
+
+        # size = self.starting_state.cube.n
+        # stagnation_points = evaluation_function(GameState(Cube(size, inner=eval(f"stagnate_{size}"))))
+        # weight = stagnation_points / 20
+        #
+        # self.distance_weighting = lambda x: x * weight
+        # self.distance_heuristic_link = lambda x, y: x + y
+
         if weight < 1:
             self.distance_weighting = lambda x: 0
             self.distance_heuristic_link = lambda x, y: x + y
@@ -33,7 +41,7 @@ class DijkstraGameEngine:
             self.distance_weighting = lambda x: x ** 2
             self.distance_heuristic_link = lambda x, y: x + y
         elif weight < 1_000_000:
-            self.distance_weighting = lambda x: x
+            self.distance_weighting = lambda x: x + 1
             self.distance_heuristic_link = lambda x, y: x * y
         else:
             self.distance_weighting = lambda x: (1 + x) ** 2
@@ -67,8 +75,10 @@ class DijkstraGameEngine:
                     heapq.heappush(
                         heap,
                         (
-                            (distance + 1) ** 2
-                            * self.evaluation_function(GameState(next_state)),
+                            self.distance_heuristic_link(
+                                self.distance_weighting(distance),
+                                self.evaluation_function(GameState(next_state))
+                            ),
                             next_state.cube,
                             current[2] + [move],
                         ),

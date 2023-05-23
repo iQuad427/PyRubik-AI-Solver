@@ -2,12 +2,12 @@ import heapq
 import math
 
 from src.evaluation.solver.kociemba_evaluation import kociemba_distance_evaluation
-from src.modelisation.data import scrambled_3, scrambled_2
+from src.modelisation.data import scrambled_3, scrambled_2, stagnate_3, stagnate_2
 from src.modelisation.modelisation import Cube, final_position
 from src.search.models.game_state import GameState
 
 
-def dijkstra_search(model: Cube, queue=None, evaluation_function=None, distance=True):
+def dijkstra_search(model: Cube, queue=None, evaluation_function=None, distance=True, auto_scaling=False, moves=20):
     best_score = math.inf
     number_move = 0
     distances = {str(model.cube): 0}
@@ -15,25 +15,33 @@ def dijkstra_search(model: Cube, queue=None, evaluation_function=None, distance=
     heap = [(best_score, model.cube, [])]
     heapq.heapify(heap)
 
-    weight = evaluation_function(GameState(Cube(model.n, inner=eval(f"scrambled_{model.n}"))))
+    size = model.n
 
     # Use the heuristic typical value to extend the weight to give to the distance
     # (Used to avoid giving too much importance to the distance and inversely)
-    if weight < 1:
-        distance_weighting = lambda x: 1
-        distance_heuristic_link = lambda x, y: x * y
-    elif weight < 1_000:
-        distance_weighting = lambda x: 2 * x if distance else 0
+    if auto_scaling:
+        stagnation_points = evaluation_function(GameState(Cube(size, inner=eval(f"stagnate_{size}"))))
+        weight = stagnation_points / moves
+
+        distance_weighting = lambda x: x * weight
         distance_heuristic_link = lambda x, y: x + y
-    elif weight < 100_000:
-        distance_weighting = lambda x: 10 * x if distance else 0
-        distance_heuristic_link = lambda x, y: x + y
-    elif weight < 1_000_000:
-        distance_weighting = lambda x: x if distance else 1
-        distance_heuristic_link = lambda x, y: x * y
     else:
-        distance_weighting = lambda x: (1 + x) ** 2 if distance else 1
-        distance_heuristic_link = lambda x, y: x * y
+        weight = evaluation_function(GameState(Cube(size, inner=eval(f"scrambled_{size}"))))
+        if weight < 1:
+            distance_weighting = lambda x: 0
+            distance_heuristic_link = lambda x, y: x + y
+        elif weight < 1_000:
+            distance_weighting = lambda x: x if distance else 0
+            distance_heuristic_link = lambda x, y: x + y
+        elif weight < 100_000:
+            distance_weighting = lambda x: x ** 2 if distance else 0
+            distance_heuristic_link = lambda x, y: x + y
+        elif weight < 1_000_000:
+            distance_weighting = lambda x: x + 1 if distance else 1
+            distance_heuristic_link = lambda x, y: x * y
+        else:
+            distance_weighting = lambda x: (1 + x) ** 2 if distance else 1
+            distance_heuristic_link = lambda x, y: x * y
 
     while len(heap) != 0:
         current = heapq.heappop(heap)
@@ -43,7 +51,9 @@ def dijkstra_search(model: Cube, queue=None, evaluation_function=None, distance=
             best_score = current[0]
             print(f"best score yet ({len(current[2])} moves):", current[0])
             print(current[2])
-            print(model.permute(current[2]))
+            new = model.permute(current[2])
+            print(new)
+            print(new.cube)
 
             number_move = len(current[2])
 

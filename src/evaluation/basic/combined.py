@@ -16,3 +16,9 @@ def combined_simple_heuristics_evaluation(state: GameState):
     g = entropy_based_score_evaluation_function(state)
     h = face_color_membership_evaluation_function(state)
     return f + g + h
+
+
+def combines_simple_heuristics_evaluation_2x2(state: GameState):
+    f = distance_to_good_face_evaluation_function(state)
+    g = entropy_based_score_evaluation_function(state)
+    return f + g
